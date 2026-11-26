@@ -123,3 +123,21 @@ export interface PublicPriceEvidence {
     published_at: string;
   }[];
 }
+
+export type PriceSearchResult = PublicPrice & {
+  published_group: string | null;
+};
+
+export interface PriceSearchFilters {
+  round_id: string[];
+  published_group: string[];
+  price_type: PublicPrice["price_type"][];
+  pack_quantity: (number | null)[];
+  unit: string[];
+}
+
+export interface PriceSearchResponse {
+  prices: PriceSearchResult[];
+  filters: PriceSearchFilters;
+  next_cursor: string | null;
+}

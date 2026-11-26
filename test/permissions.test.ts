@@ -17,6 +17,10 @@ test("PostgreSQL 应用、治理、Worker 和发布登录分别遵循治理区�
   assert.equal((await application.query("SELECT price_id FROM orth_catalog.price_evidence_v1")).rowCount, 0);
   await assert.rejects(application.query("SELECT published_by FROM orth_catalog.publication_revision"), insufficientPrivilege);
   await assert.rejects(application.query("DELETE FROM orth_catalog.publication_revision"), insufficientPrivilege);
+  assert.equal((await application.query("SELECT price_id FROM orth_catalog.price_search_v1")).rowCount, 0);
+  assert.deepEqual((await application.query(
+    "SELECT has_column_privilege('orth_catalog.price_search_v1', 'published_group', 'UPDATE') AS can_update"
+  )).rows, [{ can_update: false }]);
   await assert.rejects(application.query("SELECT price_id FROM orth_governance.import_candidate"), insufficientPrivilege);
   await assert.rejects(application.query("UPDATE orth_governance.import_candidate SET reviewed_at = now()"), insufficientPrivilege);
   await assert.rejects(application.query("SELECT published_by FROM orth_catalog.price_record"), insufficientPrivilege);
@@ -76,9 +80,15 @@ test("升级 #2 已发布数据后，应用角色仍以原 price_id 读取完整
   `);
 
   await Promise.all([migrate(), migrate()]);
+  assert.deepEqual((await owner.query(
+    "SELECT filename FROM orth_migrations.applied WHERE filename LIKE '004-%' ORDER BY filename"
+  )).rows, [{ filename: "004-governance-publication.sql" }, { filename: "004-price-search.sql" }]);
   await owner.query(`GRANT orth_application TO ${application.name}`);
   const { rows } = await application.pool.query("SELECT * FROM orth_catalog.price_v1 WHERE price_id = $1", [price_id]);
   assert.deepEqual(rows, [{ ...expected, published_at: publishedAt }]);
+  assert.deepEqual((await application.pool.query(
+    "SELECT price_id, published_group FROM orth_catalog.price_search_v1"
+  )).rows, [{ price_id, published_group: "A" }]);
   await assert.rejects(application.pool.query("UPDATE orth_catalog.price_record SET amount = 1"), insufficientPrivilege);
   await assert.rejects(application.pool.query("DELETE FROM orth_catalog.price_record"), insufficientPrivilege);
 });

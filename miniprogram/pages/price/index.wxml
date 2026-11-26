@@ -1,24 +1,55 @@
 <view class="page">
-  <form bindsubmit="searchPrice" class="card">
-    <label for="price-id" class="label">价格编码</label>
-    <input id="price-id" name="price_id" value="{{priceId}}" placeholder="输入价格编码" />
-    <button form-type="submit" disabled="{{loading}}" loading="{{loading}}">查询价格</button>
+  <form wx:if="{{!showDetail}}" id="keyword-search" bindsubmit="submitSearch" class="card">
+    <label for="keyword" class="label">搜索公开价格</label>
+    <input id="keyword" name="q" value="{{keyword}}" bindinput="editKeyword" maxlength="200"
+      disabled="{{loading}}" placeholder="产品名、别名、企业名或价格编码" />
+    <button class="search-button" form-type="submit" disabled="{{loading}}">查询价格</button>
+    <view wx:if="{{scope}}" class="scope">查询范围 · {{scope.label}}</view>
+    <view class="filters">
+      <picker wx:for="{{pickers}}" wx:key="key" id="filter-{{item.key}}" data-index="{{index}}"
+        range="{{item.options}}" range-key="label" value="{{item.selected}}" disabled="{{loading}}" bindchange="chooseTag">
+        <view class="filter">
+          <view class="label">{{item.label}}</view>
+          <view>{{item.options[item.selected].label}} ▾</view>
+        </view>
+      </picker>
+    </view>
+    <button bindtap="clearSearch" disabled="{{loading}}" size="mini">清除查询条件</button>
   </form>
 
+  <view wx:if="{{loading}}" class="context">正在查询价格…</view>
   <view wx:if="{{error}}" class="error">{{error}}</view>
-  <block wx:if="{{price}}">
-    <view class="card">
-      <text class="label">{{price.price_type}}</text>
-      <view class="amount">{{price.amount}} {{price.unit}}</view>
-      <view class="title">{{price.product_system}}</view>
-      <view>{{price.applicant}}</view>
-      <view class="context">
-        {{price.region}}<block wx:if="{{price.effective_from}}">自 {{price.effective_from}} 执行</block>
-        <block wx:else> · 起始日期未确认</block> · {{price.service_fee_basis}}
-      </view>
-      <button id="share-price" open-type="share" size="mini">分享这条价格</button>
-    </view>
+  <view wx:if="{{!showDetail && searched && !prices.length}}" class="card">暂无符合条件的已发布价格。</view>
 
+  <view wx:for="{{showDetail ? (price ? [price] : []) : prices}}" wx:key="price_id" class="card">
+    <text class="label">{{item.price_type}}</text>
+    <view class="amount">{{item.amount}} {{item.unit}}</view>
+    <view>{{item.product_system}}</view>
+    <view class="context">{{item.applicant}}</view>
+    <view class="context">
+      {{item.region}} · {{item.hospital_id || '未单列医院'}}
+      <block wx:if="{{item.round_id}}"> · {{item.round_id}}</block>
+      <block wx:if="{{item.published_group}}"> · 分组 {{item.published_group}}</block>
+    </view>
+    <view class="context">
+      <block wx:if="{{item.subject_kind === 'kit_category'}}">产品系统类别</block>
+      <block wx:elif="{{item.subject_kind === 'kit'}}">套件 {{item.kit_version_id}}</block>
+      <block wx:else>品规 {{item.product_spec_id}}</block>
+      <block wx:if="{{item.pack_quantity !== null}}"> · 包装内数量 {{item.pack_quantity}}</block>
+      <block wx:else> · 包装内数量未核实</block>
+    </view>
+    <view class="context">
+      {{item.effective_from || '起日未核实'}} 至 {{item.effective_to || '止日未核实'}} · {{item.service_fee_basis}}
+    </view>
+    <block wx:if="{{showDetail}}">
+      <view class="context">价格编码 {{item.price_id}}</view>
+      <button id="share-price" open-type="share" size="mini">分享这条价格</button>
+    </block>
+    <button wx:else class="result-link" id="result-{{item.price_id}}" bindtap="selectResult" data-price-id="{{item.price_id}}"
+      size="mini">查看价格与出处</button>
+  </view>
+
+  <block wx:if="{{showDetail && price}}">
     <view class="card">
       <view class="title">官方出处</view>
       <view class="label">{{price.source.publisher}}</view>
@@ -28,5 +59,26 @@
       <view class="location">{{price.source.sheet_name}} · 第 {{price.source.row_number}} 行 · {{price.source.price_cell}}</view>
       <button id="copy-attachment" bindtap="copyAttachment" size="mini">复制原表链接</button>
     </view>
+
+    <view class="card">
+      <view class="title">继续查询</view>
+      <view class="actions">
+        <button wx:if="{{price.product_spec_id}}" id="continue-subject" bindtap="continueSearch"
+          data-key="product_spec_id" data-value="{{price.product_spec_id}}" data-label="品规 {{price.product_spec_id}}"
+          size="mini">同品规</button>
+        <button wx:elif="{{price.kit_version_id}}" id="continue-subject" bindtap="continueSearch"
+          data-key="kit_version_id" data-value="{{price.kit_version_id}}" data-label="套件 {{price.kit_version_id}}"
+          size="mini">同套件</button>
+        <button wx:else id="continue-subject" bindtap="continueSearch"
+          data-key="product_system" data-value="{{price.product_system}}" data-label="{{price.product_system}}"
+          size="mini">同产品系统类别</button>
+        <button id="continue-region" bindtap="continueSearch" data-key="region" data-value="{{price.region}}"
+          data-label="{{price.region}}" size="mini">同地区</button>
+        <button wx:if="{{price.round_id}}" id="continue-round" bindtap="continueSearch"
+          data-key="round_id" data-value="{{price.round_id}}" data-label="{{price.round_id}}" size="mini">同轮次</button>
+      </view>
+    </view>
   </block>
+  <button wx:if="{{showDetail}}" bindtap="returnToSearch" disabled="{{loading}}" size="mini">返回查价</button>
+  <button wx:elif="{{nextCursor}}" bindtap="morePrices" disabled="{{loading}}">加载更多</button>
 </view>

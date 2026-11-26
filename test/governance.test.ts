@@ -11,7 +11,7 @@ import { promisify } from "node:util";
 import { read, write } from "xlsx";
 
 import { createApp } from "../src/app.ts";
-import { checkMiniPricePage } from "./mini-preview.ts";
+import { checkMiniPricePage, checkMiniPriceSearch } from "./mini-preview.ts";
 import { testDatabase } from "./postgres.ts";
 import { checkWebPricePage } from "./web-price-preview.ts";
 
@@ -240,7 +240,7 @@ test("运行中的采集可见，强制停止后标记中断且手工入口可�
   ]);
 });
 
-test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与查价", { timeout: 20_000 }, async (t) => {
+test("独立 Worker、运营 Web 和小程序用同一原表完成发布、查价与分享", { timeout: 45_000 }, async (t) => {
   const database = await testDatabase(t);
   const dataDir = await workspace(t);
   await database.migrate();
@@ -250,12 +250,24 @@ test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与�
   const application = await database.login("orth_application");
   const { supply, ...governed } = JSON.parse(await readFile("samples/hunan-joint-governance.json", "utf8"));
   const supplyPath = process.env.ORTH_TEST_SUPPLY_WORKBOOK;
+  const liveDownload = process.env.ORTH_TEST_LIVE_HUNAN === "1" && !supplyPath;
   const governedManifest = join(dataDir, "governed.json");
   await writeFile(governedManifest, JSON.stringify(supplyPath ? { ...governed, supply } : governed));
-  const run = (supporting?: string) => exec(process.execPath, ["src/start-worker.ts", governedManifest, workbook,
-    ...(supporting ? [supporting] : [])], { env: { ORTH_WORKER_DATABASE_URL: worker.url, ORTH_DATA_DIR: dataDir } });
-  if (supplyPath) await assert.rejects(run(workbook), /供应清单与 SHA-256 不一致/);
-  await run(supplyPath);
+  const run = async (file: string, ...attachments: string[]) => JSON.parse((await exec(process.execPath,
+    ["src/start-worker.ts", file, ...attachments],
+    { env: { ORTH_WORKER_DATABASE_URL: worker.url, ORTH_DATA_DIR: dataDir } })).stdout);
+  if (supplyPath) await assert.rejects(run(governedManifest, workbook, workbook), /供应清单与 SHA-256 不一致/);
+  const attachments = liveDownload ? [] : [workbook];
+  if (supplyPath) attachments.push(supplyPath);
+  const primary = await run(governedManifest, ...attachments);
+  assert.equal(primary.price_id, priceId);
+  const baseManifest = JSON.parse(await readFile(manifest, "utf8"));
+  const companionPrices: string[] = [];
+  for (const row of [6, 17]) {
+    const rowManifest = join(dataDir, `row-${row}.json`);
+    await writeFile(rowManifest, JSON.stringify({ ...baseManifest, row_number: row }));
+    companionPrices.push((await run(rowManifest, workbook)).price_id);
+  }
 
   await using api = await start("src/start-governance.ts", {
     ...operator, ORTH_GOVERNANCE_DATABASE_URL: governance.url,
@@ -268,11 +280,12 @@ test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与�
   });
   const price = () => fetch(`${app.url}/api/v1/prices/${priceId}`);
   const evidence = () => fetch(`${app.url}/api/v1/prices/${priceId}/evidence`);
+  const search = async () => (await fetch(`${app.url}/api/v1/prices?published_group=A`)).json();
 
   assert.equal((await fetch(web.url + "/ops")).status, 401);
   const get = (path: string) => fetch(web.url + "/ops" + path, { headers: { authorization } });
-  const action = (name: string, contentType = "application/json") =>
-    fetch(web.url + "/ops/candidates/" + priceId + "/" + name, {
+  const action = (name: string, contentType = "application/json", id = priceId) =>
+    fetch(web.url + "/ops/candidates/" + id + "/" + name, {
       method: "POST", headers: { authorization, "content-type": contentType }, body: "{}"
     });
 
@@ -307,10 +320,12 @@ test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与�
   assert.equal((await action("review", "text/plain")).status, 415);
   assert.equal((await price()).status, 404);
   assert.equal((await evidence()).status, 404);
+  assert.deepEqual((await search()).prices, []);
   assert.equal((await action("review")).status, 204);
   assert.match(await (await get(candidateRoute)).text(), /已复核/);
   assert.equal((await price()).status, 404);
   assert.equal((await evidence()).status, 404);
+  assert.deepEqual((await search()).filters.published_group, []);
   assert.equal((await action("publish")).status, 204);
   assert.match(await (await get("/tasks")).text(), /已发布/);
   const published = await price();
@@ -319,6 +334,9 @@ test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与�
   const expected = JSON.parse(await readFile("samples/hunan-joint-results.published.json", "utf8"));
   assert.ok(published_at);
   assert.deepEqual(snapshot, expected);
+  assert.deepEqual((await search()).prices.map(({ price_id, published_group }: {
+    price_id: string; published_group: string
+  }) => [price_id, published_group]), [[priceId, "A"]]);
   const response = await evidence();
   assert.equal(response.status, 200);
   const publishedEvidence = await response.json();
@@ -361,6 +379,10 @@ test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与�
     assert.equal(createHash("sha256").update(Buffer.from(await supporting.arrayBuffer())).digest("hex"), supply.sha256);
   }
 
+  for (const id of companionPrices) {
+    assert.equal((await action("review", "application/json", id)).status, 204);
+    assert.equal((await action("publish", "application/json", id)).status, 204);
+  }
   await web.stop();
   await api.stop();
   const afterShutdown = await price();
@@ -369,6 +391,7 @@ test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与�
   assert.deepEqual(await (await evidence()).json(), publishedEvidence);
   await checkWebPricePage(app.url, expected);
   await checkMiniPricePage(app.url, priceId);
+  await checkMiniPriceSearch(app.url, priceId);
 });
 
 test("治理 Skill 重跑、追加证据、金额冲突及两种更正可沿公开版本回查", { timeout: 25_000 }, async (t) => {

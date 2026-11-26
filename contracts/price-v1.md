@@ -46,6 +46,20 @@
 
 变更提交时须指明目标版本并经运营复核。发现目标版本已变化、目标已有正式后继或证据与操作条件冲突时返回 `409`。采集失败及运营身份只在治理端查询。
 
+## 公开搜索
+
+免登录的 `GET /api/v1/prices` 读取正式区视图 `orth_catalog.price_search_v1`。可选参数 `q` 在产品名称、检索别名或申报企业名称中匹配字面子串，去掉首尾空白并忽略英文大小写，也可以精确匹配价格编码。人工关节接续的四个产品系统类别有按官方名称和材料组合整理的检索别名，例如「合金对聚乙烯髋关节」。详情继续使用 `GET /api/v1/prices/{price_id}`。
+
+| 参数 | 匹配规则 |
+| --- | --- |
+| `round_id`、`published_group`、`price_type`、`unit` | 精确匹配采购轮次、已公布分组、价格类型和计价单位。湖南样本的分组取自原表「竞价单元」列。 |
+| `pack_quantity` | 精确匹配包装内数量，传正整数或 `unknown`（原记录为 `null`）。 |
+| `product_spec_id`、`kit_version_id`、`region` | 通过详情继续按已核验的品规、套件版本或地区精确查询。 |
+| `product_system` | 按名称精确查询同一产品系统类别的套价。 |
+| `after` | 加载下一页时传入上次返回的 `next_cursor`，其余查询条件保持一致。 |
+
+不同条件取交集。响应的 `prices` 按 `price_id` 升序返回至多 30 项，每项沿用详情字段并补充 `published_group`（未公布时为 `null`）。`filters` 给出全站已发布记录的五类标签值，即使当前条件命中为空也返回。包装内数量的 `null` 可选，未知的轮次和分组不生成标签。`next_cursor` 为 `null` 时已到末页。已知参数的格式无效时返回 `400` 和 `{"error":"invalid_price_search"}`。
+
 ## 共享回归样本
 
 治理端使用原表与导入清单，应用端使用发布快照检查字段和值。`published_at` 在数据库发布时生成。 [原表](../samples/hunan-joint-results.xls) · [导入清单](../samples/hunan-joint-results.json) · [发布快照](../samples/hunan-joint-results.published.json)
