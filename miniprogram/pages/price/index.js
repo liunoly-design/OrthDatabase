@@ -21,8 +21,8 @@ Page({
   loadPrice(priceId) {
     if (this.data.loading) return;
     this.setData({ priceId, price: null, error: "" });
-    if (!/^aj_[a-f0-9]{32}$/.test(priceId)) {
-      this.setData({ error: "请输入有效的价格编码。" });
+    if (!priceId) {
+      this.setData({ error: "请输入价格编码。" });
       return;
     }
 
@@ -45,6 +45,16 @@ Page({
       fail: () => this.setData({ loading: false, error: "暂时无法连接，请重试。" })
     };
     wx.request(request);
+  },
+
+  onShareAppMessage() {
+    const { price } = this.data;
+    const path = "/pages/price/index";
+    if (!price) return { title: "骨科集采公开价格查询", path };
+    return {
+      title: `${price.product_system} · ${price.amount} ${price.unit}`,
+      path: `${path}?price_id=${encodeURIComponent(price.price_id)}`
+    };
   },
 
   copyNotice() {

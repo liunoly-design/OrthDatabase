@@ -1,6 +1,6 @@
 # 骨科集采查价
 
-从官方原始工作簿导入产品系统中选价，在 Web 后台对照原表、确认复核并发布，然后通过公开 API 和微信小程序查价。两套系统共用 [价格发布契约 v1](contracts/price-v1.md) 和 PostgreSQL，使用独立的运行登录。
+从官方原始工作簿导入产品系统中选价，在 Web 后台对照原表、确认复核并发布，然后通过用户 Web 和微信小程序共用的公开 API 查价。两套系统共用 [价格发布契约 v1](contracts/price-v1.md) 和 PostgreSQL，使用独立的运行登录。
 
 ## 真实样本
 
@@ -71,11 +71,15 @@ export ORTH_DATA_DIR="$PWD/.orth-data"
 npm run start:worker -- samples/hunan-joint-results.json
 ```
 
-应用查询 API 使用自己的运行登录，独立于上述进程。
+### 数据应用系统
+
+应用服务同时提供访客 Web 和查询 API，使用自己的数据库登录。该登录在 `orth_app` 维护应用数据，从 `orth_catalog.price_v1` 读取已发布价格。应用默认监听 `127.0.0.1:3000`，治理 API 和采集 Worker 暂停时仍可查到最后一次发布的价格。
 
 ```sh
-ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@localhost/orthdatabase' npm start -- app
+ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@localhost/orthdatabase' npm run start:application
 ```
+
+## 联调查价
 
 1. 打开 `http://127.0.0.1:3002/ops`，登录后查看「官方信源」「采集任务」和「价格复核」。从任务打开候选，核对公告、官方原表、留档文件和高亮价格格。
 2. 点击「确认复核」，再点击「发布价格」。
@@ -84,6 +88,10 @@ ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@loca
 ```sh
 curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 ```
+
+- Web 打开 `http://127.0.0.1:3000/` 输入价格编码，或直接打开 `http://127.0.0.1:3000/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情提供湖南执行公告、官方原表和原表价格格。
+- 微信开发者工具导入仓库根目录。启动页可输入价格编码，或用自定义编译条件打开 `pages/price/index?price_id=aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情可分享同一价格编码，查看 `Sheet1 · 第 5 行 · G5` 并复制两个官方链接。
+- 小程序游客配置默认连接 `http://127.0.0.1:3000`。接入真机或发布时，在 `miniprogram/app.js` 配置应用服务的 HTTPS 地址，并设置小程序请求合法域名。Web 和小程序共用 `GET /api/v1/prices/{price_id}`。
 
 ## 构建与部署
 
@@ -95,7 +103,7 @@ curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 
 部署时分发对应的输出目录和根目录的 npm 清单及锁文件，执行 `npm ci --omit=dev` 安装运行依赖。HTTP 服务的监听地址和端口可用 `HOST` 和 `PORT` 配置。数据库迁移在部署前单独执行一次。
 
-在微信开发者工具导入仓库根目录。启动页支持输入价格编码，也可用自定义编译条件打开 `pages/price/index?price_id=aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情显示计价单位和 `Sheet1 · 第 5 行 · G5`，并可复制官方公告链接和原表下载链接。仓库中的游客配置连接本地 API。接入真机或发布时，在 `miniprogram/app.js` 配置实际 HTTPS API 地址并设置小程序请求合法域名。
+数据应用系统可用 Node.js 24 执行 `npm run start:application`。分发 `src/application`、其导入的服务端文件与 npm 清单及锁文件，`src/application` 下的页面和静态资源保持原目录结构。
 
 ## 验证
 
@@ -108,4 +116,4 @@ npm test
 npm run typecheck
 ```
 
-请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。小程序模拟测试加载实际页面脚本与 WXML，通过同一查询 API 取价并验证两个出处按钮。
+请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。测试独立启动应用进程，并在关闭治理服务后通过应用 API 复验最后一次发布。Web 测试提交实际页面表单、执行浏览器脚本并检查官方链接。小程序模拟测试加载实际页面脚本与 WXML，经同一 API 验证分享路径和两个出处按钮。

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>公开价格查询 · 骨科集采</title>
+  <link rel="stylesheet" href="/assets/price-query/price.css">
+  <script src="/assets/price-query/price.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/">骨科集采<span> · 公开价格</span></a>
+  </header>
+  <main>
+    <h1>按价格编码查询</h1>
+    <form method="get" action="/prices" role="search">
+      <label for="price-id">价格编码</label>
+      <div class="search-controls">
+        <input id="price-id" name="price_id" type="text" placeholder="输入价格编码"
+          spellcheck="false" autocomplete="off" required>
+        <button type="submit">查询价格</button>
+      </div>
+    </form>
+    <p id="status" role="status"></p>
+    <noscript><p>请启用 JavaScript 查看价格和官方出处。</p></noscript>
+    <article id="price-detail" aria-labelledby="product" hidden>
+      <section class="card">
+        <p class="price-type" id="price-type"></p>
+        <p class="amount" id="amount"></p>
+        <h2 id="product"></h2>
+        <p id="applicant"></p>
+        <dl>
+          <dt>适用地区</dt><dd id="region"></dd>
+          <dt>价格有效期</dt><dd id="effective-period"></dd>
+          <dt>伴随服务费</dt><dd id="service-fee"></dd>
+        </dl>
+      </section>
+      <section class="card">
+        <h2>官方出处</h2>
+        <p id="publisher"></p>
+        <p class="source"><a id="notice" target="_blank" rel="noopener noreferrer" hidden></a></p>
+        <p class="source"><a id="attachment" target="_blank" rel="noopener noreferrer" hidden></a></p>
+        <p class="location" id="location"></p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

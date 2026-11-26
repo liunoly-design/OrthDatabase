@@ -13,6 +13,7 @@
     "start:governance": "node src/start-governance.ts",
     "start:operations": "node src/start-operations.ts",
     "start:worker": "node src/start-worker.ts",
+    "start:application": "node src/application/start.ts",
     "build:service": "tsc --ignoreConfig --target ES2023 --module NodeNext --strict --skipLibCheck --types node --rewriteRelativeImportExtensions --rootDir src",
     "build:governance": "npm run build:service -- --outDir dist/governance src/start-governance.ts",
     "build:operations": "npm run build:service -- --outDir dist/operations src/start-operations.ts",
