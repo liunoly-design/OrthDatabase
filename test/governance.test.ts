@@ -7,7 +7,9 @@ import { test } from "node:test";
 import { setTimeout as wait } from "node:timers/promises";
 import { promisify } from "node:util";
 import { createApp } from "../src/app.ts";
+import { checkMiniPricePage } from "./mini-preview.ts";
 import { testDatabase } from "./postgres.ts";
+import { checkWebPricePage } from "./web-price-preview.ts";
 
 const operator = { ORTH_OPERATOR_USER: "reviewer", ORTH_OPERATOR_PASSWORD: "test-secret" };
 const authorization = "Basic " + Buffer.from("reviewer:test-secret").toString("base64");
@@ -234,7 +236,7 @@ test("运行中的采集可见，强制停止后标记中断且手工入口可�
   ]);
 });
 
-test("运营 Web 独立运行，登录后从任务定位真实附件、复核并发布", { timeout: 20_000 }, async (t) => {
+test("独立 Worker、运营 Web 和数据应用用同一原表完成发布与查价", { timeout: 20_000 }, async (t) => {
   const database = await testDatabase(t);
   const dataDir = await workspace(t);
   await database.migrate();
@@ -250,12 +252,12 @@ test("运营 Web 独立运行，登录后从任务定位真实附件、复核并
     ...operator, ORTH_GOVERNANCE_DATABASE_URL: governance.url,
     ORTH_PUBLISHER_DATABASE_URL: publisher.url, ORTH_DATA_DIR: dataDir
   });
-  await using web = await start("src/start-operations.ts", { ORTH_GOVERNANCE_API_URL: api.url + apiPath });
-  await using app = createApp({ applicationPool: application.pool }).listen(0, "127.0.0.1");
-  await once(app, "listening");
-  const address = app.address();
-  assert.ok(address && typeof address === "object");
-  const price = () => fetch(`http://127.0.0.1:${address.port}/api/v1/prices/${priceId}`);
+  await using app = await start("src/application/start.ts", { ORTH_APPLICATION_DATABASE_URL: application.url });
+  await using web = await start("src/start-operations.ts", {
+    ORTH_GOVERNANCE_API_URL: api.url + apiPath,
+    ORTH_APPLICATION_API_ORIGIN: app.url
+  });
+  const price = () => fetch(`${app.url}/api/v1/prices/${priceId}`);
 
   assert.equal((await fetch(web.url + "/ops")).status, 401);
   const get = (path: string) => fetch(web.url + "/ops" + path, { headers: { authorization } });
@@ -291,5 +293,18 @@ test("运营 Web 独立运行，登录后从任务定位真实附件、复核并
   assert.equal((await price()).status, 404);
   assert.equal((await action("publish")).status, 204);
   assert.match(await (await get("/tasks")).text(), /已发布/);
-  assert.equal((await price()).status, 200);
+  const published = await price();
+  assert.equal(published.status, 200);
+  const { published_at, ...snapshot } = await published.json();
+  const expected = JSON.parse(await readFile("samples/hunan-joint-results.published.json", "utf8"));
+  assert.ok(published_at);
+  assert.deepEqual(snapshot, expected);
+
+  await web.stop();
+  await api.stop();
+  const afterShutdown = await price();
+  assert.equal(afterShutdown.status, 200);
+  assert.deepEqual(await afterShutdown.json(), { ...expected, published_at });
+  await checkWebPricePage(app.url, expected);
+  await checkMiniPricePage(app.url, priceId);
 });

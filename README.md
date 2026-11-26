@@ -63,7 +63,7 @@ ORTH_GOVERNANCE_API_URL='http://127.0.0.1:3001/api/governance/v1' ORTH_APPLICATI
 
 `ORTH_APPLICATION_API_ORIGIN` 用于在已发布候选上显示公开查价链接，可省略。治理 API 提供 `/api/governance/v1/sources`、`/tasks`、`/candidates` 和候选的附件、复核、发布路由。
 
-采集 Worker 每次运行处理一份清单指定的 Excel 明细位置。省略工作簿路径时从清单的官方附件地址下载；离线回放时可在命令末尾加上 `samples/hunan-joint-results.xls`。两种模式都核对清单中的 SHA-256。每次运行都有独立任务记录，重复导入复用原价格编码。Worker 异常退出后，运营端会标记中断的任务；重新执行会生成新任务。可从外部调度器定时执行同一入口。
+采集 Worker 每次运行处理一份清单指定的 Excel 明细位置。省略工作簿路径时从清单的官方附件地址下载，离线回放时可在命令末尾加上 `samples/hunan-joint-results.xls`。两种模式都核对清单中的 SHA-256。清单读取并校验通过后登记独立任务，重复导入复用原价格编码。任务登记前的清单错误由 Worker 写入进程日志。Worker 异常退出后，运营端会标记中断的任务，重新执行会生成新任务。可从外部调度器定时执行同一入口。
 
 ```sh
 export ORTH_WORKER_DATABASE_URL='postgresql://orth_worker_login:PASSWORD@localhost/orthdatabase'

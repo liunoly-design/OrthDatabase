@@ -9,6 +9,9 @@ if (!user || user.includes(":") || !password) {
 }
 const pool = connect("ORTH_GOVERNANCE_DATABASE_URL");
 const publisherPool = connect("ORTH_PUBLISHER_DATABASE_URL");
+for (const connection of [pool, publisherPool]) {
+  connection.on("error", (error) => console.error("Governance PostgreSQL connection lost", error));
+}
 const close = () => Promise.all([pool.end(), publisherPool.end()]);
 try {
   await Promise.all([pool.query("SELECT 1"), publisherPool.query("SELECT 1")]);
