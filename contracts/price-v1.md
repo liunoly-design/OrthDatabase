@@ -21,6 +21,8 @@
 | `effective_from`、`effective_to` | 价格适用日期以公元 0001 至 9999 年的 `YYYY-MM-DD` 传递。起日含、止日不含。日期未核实时为 `null`。样本于 `2024-10-15` 开始执行。通知描述三年采购周期和年度签约，价格记录的确切结束日留空。 |
 | `source` | `publisher`、`notice_title`、`notice_url` 指向执行公告及其发文方；`attachment_title`、`attachment_url` 指向正式中选原表；`sha256` 锁定附件字节版本；`sheet_name`、`row_number`、`price_cell` 定位 Excel 明细行和计价格。行号从 1 开始。 |
 
+`source.attachment_format: "html"` 表示官方公告内嵌的结果表。该格式的 `sha256` 校验原网页中结果表元素的原始 UTF-8 字节。`sheet_name` 为网页附件表名，`row_number` 从表头所在的第 1 行计算，`price_cell` 以列字母和行号定位。既有工作簿继续省略该字段。`source.local_award_reference` 可指向地方附件的中选资格行，包含 PDF 页码、附件序号、对应企业和产品系统类别及附件 SHA-256。地方执行和国家金额出处也可通过 [政策与执行价查询契约](procurement-v1.md) 联查。
+
 ## 状态与版本
 
 - `record_status: "published"` 表示已复核并在正式区发布。治理区记录「待复核」「已复核」状态，发布后运营端显示「已发布」。业务日期由 `effective_from` 和 `effective_to` 表达。

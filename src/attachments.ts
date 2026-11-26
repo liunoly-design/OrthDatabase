@@ -7,15 +7,15 @@ export function sha256(content: Buffer | string) {
   return createHash("sha256").update(content).digest("hex");
 }
 
-export function attachmentPath(root: string, digest: string, format: "xls" | "xlsx" = "xls") {
+export function attachmentPath(root: string, digest: string, format: "xls" | "xlsx" | "html" = "xls") {
   if (!/^[a-f0-9]{64}$/.test(digest)) throw new Error("Invalid attachment digest");
   return join(root, `${digest}.${format}`);
 }
 
-export async function saveAttachment(root: string, digest: string, workbook: Buffer, format: "xls" | "xlsx" = "xls") {
+export async function saveAttachment(root: string, digest: string, workbook: Buffer, format: "xls" | "xlsx" | "html" = "xls") {
   await mkdir(root, { recursive: true });
   const staging = await mkdtemp(join(root, ".import-"));
-  const file = join(staging, "source.xls");
+  const file = join(staging, "source." + format);
   try {
     await writeFile(file, workbook);
     await rename(file, attachmentPath(root, digest, format));
@@ -26,7 +26,8 @@ export async function saveAttachment(root: string, digest: string, workbook: Buf
 
 export function candidateAttachment(candidate: ReviewCandidate, document: string) {
   if (document === "attachment") {
-    return { digest: candidate.source.sha256, title: candidate.source.attachment_title, format: "xls" } as const;
+    return { digest: candidate.source.sha256, title: candidate.source.attachment_title,
+      format: candidate.source.attachment_format ?? "xls" } as const;
   }
   const supply = candidate.governance?.related_system?.evidence;
   if (document === "supply" && supply) {

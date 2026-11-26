@@ -1,9 +1,21 @@
+export interface LocalAwardReference {
+  title: string;
+  url: string;
+  sha256: string;
+  page: number;
+  serial_number: number;
+  applicant: string;
+  product_system: string;
+}
+
 export interface PriceSource {
   publisher: string;
   notice_title: string;
   notice_url: string;
   attachment_title: string;
   attachment_url: string;
+  attachment_format?: "html";
+  local_award_reference?: LocalAwardReference;
   sha256: string;
   sheet_name: string;
   row_number: number;

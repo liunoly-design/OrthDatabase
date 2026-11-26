@@ -22,7 +22,7 @@ export function parseChangeRequest(value: unknown): ChangeRequest | null {
     reason: requiredText(item.reason, "reason") };
 }
 
-export const skillVersion = "orth-price-governance/1";
+export const skillVersion = "orth-price-governance/2";
 export const parserVersion = "joint-results-xls/1";
 
 export function object(value: unknown, field: string): Record<string, unknown> {

@@ -1,11 +1,7 @@
+import { escapeHtml as h } from "./http.ts";
 import type { EvidenceReference } from "../contracts/price-v1.d.ts";
 import type { CollectionSource, CollectionTask } from "./collection-store.ts";
 import { publishedPriceId, type CandidateSummary, type ReviewCandidate } from "./price-store.ts";
-
-function h(text: string | number) {
-  return String(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
-}
 
 function page(title: string, contents: string) {
   return `<!doctype html>
@@ -112,6 +108,7 @@ export function candidatePage(
   publicPriceUrl: string | null = `/api/v1/prices/${encodeURIComponent(publishedPriceId(candidate))}`
 ) {
   const { source, price_id: priceId, status, change } = candidate;
+  const localAward = source.local_award_reference;
   const changeLabel = {
     additional_evidence: "追加证据", official_correction: "官方更正", platform_correction: "平台误录纠错"
   };
@@ -145,7 +142,9 @@ export function candidatePage(
     <p>${h(source.publisher)} · <a href="${h(source.notice_url)}">${h(source.notice_title)}</a></p>
     <p><a href="${h(source.attachment_url)}">${h(source.attachment_title)}</a>
       · <a download href="/ops/candidates/${h(priceId)}/attachment">下载留档原表</a></p>
-    <p>工作表 ${h(source.sheet_name)} · 第 ${source.row_number} 行 · 价格格 ${h(source.price_cell)}</p>
+    <p>${source.attachment_format === "html" ? "" : "工作表 "}${h(source.sheet_name)} · 第 ${source.row_number} 行 · 价格格 ${h(source.price_cell)}</p>
+    ${localAward ? `<p><a href="${h(localAward.url)}#page=${localAward.page}">${h(localAward.title)}</a>
+      · PDF 第 ${localAward.page} 页 · 序号 ${localAward.serial_number} · SHA-256 ${h(localAward.sha256)}</p>` : ""}
     <div class="table"><table aria-label="原表表头与所选行">
       <thead><tr><th scope="col">行</th>${columns.map((column) => `<th scope="col">${column}</th>`).join("")}</tr></thead>
       <tbody>${rows}</tbody>

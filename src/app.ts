@@ -3,6 +3,7 @@ import express from "express";
 import { createHttpApp, handleHttpError } from "./http.ts";
 import type { Pool } from "pg";
 import { createPriceQueryRouter } from "./application/price-query.ts";
+import { createProcurementQueryRouter } from "./application/procurement-query.ts";
 import { attachmentPath, candidateAttachment } from "./attachments.ts";
 import { getCandidate, listCandidates, publishCandidate, reviewCandidate } from "./price-store.ts";
 import { candidatePage, queuePage, workbenchScript } from "./workbench.ts";
@@ -18,6 +19,7 @@ export function createApp({ applicationPool, governance }: { applicationPool: Po
   const app = createHttpApp();
 
   app.use("/api/v1/prices", createPriceQueryRouter(applicationPool));
+  app.use("/api/v1/procurement", createProcurementQueryRouter(applicationPool));
 
   if (governance) app.use("/ops", governanceRouter(governance));
 

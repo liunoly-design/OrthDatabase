@@ -23,3 +23,8 @@ export const handleHttpError: ErrorRequestHandler = (error, _req, res, next) => 
   console.error(error);
   res.sendStatus(500);
 };
+
+export function escapeHtml(text: string | number) {
+  return String(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
