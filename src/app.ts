@@ -3,7 +3,7 @@ import express from "express";
 import { createHttpApp, handleHttpError } from "./http.ts";
 import type { Pool } from "pg";
 import { createPriceQueryRouter } from "./application/price-query.ts";
-import { attachmentPath } from "./attachments.ts";
+import { attachmentPath, candidateAttachment } from "./attachments.ts";
 import { getCandidate, listCandidates, publishCandidate, reviewCandidate } from "./price-store.ts";
 import { candidatePage, queuePage, workbenchScript } from "./workbench.ts";
 
@@ -59,13 +59,14 @@ function governanceRouter({ pool, publisherPool, dataDir, operator }: Governance
     res.type("html").send(candidatePage(candidate));
   });
 
-  router.get("/candidates/:priceId/attachment", async (req, res) => {
+  router.get("/candidates/:priceId/:document", async (req, res) => {
     const candidate = await getCandidate(pool, req.params.priceId);
-    if (!candidate) {
+    const file = candidate && candidateAttachment(candidate, req.params.document);
+    if (!file) {
       res.sendStatus(404);
       return;
     }
-    res.download(attachmentPath(dataDir, candidate.source.sha256), candidate.source.attachment_title + ".xls");
+    res.download(attachmentPath(dataDir, file.digest, file.format), file.title + "." + file.format);
   });
 
   router.post("/candidates/:priceId/review", async (req, res) => {

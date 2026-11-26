@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import express from "express";
 import type { ErrorRequestHandler } from "express";
 import type { Pool } from "pg";
-import { attachmentPath } from "./attachments.ts";
+import { attachmentPath, candidateAttachment } from "./attachments.ts";
 import { listSources, listTasks } from "./collection-store.ts";
 import { getCandidate, listCandidates, publishCandidate, reviewCandidate } from "./price-store.ts";
 
@@ -56,13 +56,18 @@ export function createGovernanceApi({ pool, publisherPool, dataDir, operator }: 
     if (candidate) res.json(candidate);
     else res.status(404).json({ error: "candidate_not_found" });
   });
-  router.get("/candidates/:priceId/attachment", async (req, res) => {
+  router.get("/candidates/:priceId/:document", async (req, res) => {
     const candidate = await getCandidate(pool, req.params.priceId);
     if (!candidate) {
       res.status(404).json({ error: "candidate_not_found" });
       return;
     }
-    res.download(attachmentPath(".", candidate.source.sha256), candidate.source.attachment_title + ".xls", {
+    const file = candidateAttachment(candidate, req.params.document);
+    if (!file) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
+    res.download(attachmentPath(".", file.digest, file.format), file.title + "." + file.format, {
       root: resolve(dataDir)
     });
   });
@@ -77,13 +82,14 @@ export function createGovernanceApi({ pool, publisherPool, dataDir, operator }: 
   });
   router.post("/candidates/:priceId/publish", async (req, res) => {
     const { priceId } = req.params;
-    if (!await getCandidate(pool, priceId)) {
+    const candidate = await getCandidate(pool, priceId);
+    if (!candidate) {
       res.status(404).json({ error: "candidate_not_found" });
       return;
     }
     const published = await publishCandidate(publisherPool, priceId, operator.user);
     if (published) res.sendStatus(204);
-    else res.status(409).json({ error: "review_required" });
+    else res.status(409).json({ error: candidate.status === "待复核" ? "review_required" : "publication_conflict" });
   });
 
   app.use(governanceApiPath, router);

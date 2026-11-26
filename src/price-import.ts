@@ -1,34 +1,24 @@
 import { read, utils } from "xlsx";
 import { sha256 } from "./attachments.ts";
+import { httpsUrl, object, parseChangeRequest, parseGovernanceEvidence, requiredText } from "./governance-input.ts";
+import { parseSupplyManifest, extractSupplyEvidence } from "./supply-evidence.ts";
 import type { Candidate } from "./price-store.ts";
 
-function manifestField(manifest: unknown, key: string): unknown {
-  if (!manifest || typeof manifest !== "object") throw new Error("导入清单必须是 JSON 对象");
-  return (manifest as Record<string, unknown>)[key];
-}
+export function parseImportManifest(input: unknown) {
+  const manifest = object(input, "导入清单");
+  const text = (key: string) => requiredText(manifest[key], key);
+  const officialUrl = (key: string) => httpsUrl(manifest[key], key);
 
-export function parseImportManifest(manifest: unknown) {
-  const text = (key: string) => {
-    const value = manifestField(manifest, key);
-    if (typeof value !== "string" || !value.trim()) throw new Error(`缺少导入字段 ${key}`);
-    return value.trim();
-  };
-  const officialUrl = (key: string) => {
-    const value = new URL(text(key));
-    if (value.protocol !== "https:" || value.username || value.password) {
-      throw new Error(`${key} 必须为公开 HTTPS 链接`);
+  const effectiveFrom = manifest.effective_from === null ? null : text("effective_from");
+  if (effectiveFrom !== null) {
+    const date = new Date(effectiveFrom);
+    if (!/^(?!0000)\d{4}-\d{2}-\d{2}$/.test(effectiveFrom) ||
+        Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 10) !== effectiveFrom) {
+      throw new Error("effective_from 必须是 YYYY-MM-DD 格式的有效日期或 null");
     }
-    return value.href;
-  };
-
-  const effectiveFrom = text("effective_from");
-  const date = new Date(effectiveFrom);
-  if (!/^(?!0000)\d{4}-\d{2}-\d{2}$/.test(effectiveFrom) ||
-      Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 10) !== effectiveFrom) {
-    throw new Error("effective_from 必须是 YYYY-MM-DD 格式的有效日期");
   }
   const sheetName = text("sheet_name");
-  const rowNumber = manifestField(manifest, "row_number");
+  const rowNumber = manifest.row_number;
   if (typeof rowNumber !== "number" || !Number.isInteger(rowNumber) ||
       rowNumber < 5 || rowNumber > 65536) {
     throw new Error("row_number 必须是有效的 Excel 明细行号");
@@ -48,6 +38,9 @@ export function parseImportManifest(manifest: unknown) {
   if (!/^[a-f0-9]{64}$/.test(source.sha256)) throw new Error("sha256 必须是 64 位小写十六进制摘要");
   return {
     source,
+    governance: parseGovernanceEvidence(manifest.governance),
+    change: parseChangeRequest(manifest.change),
+    supply: parseSupplyManifest(manifest.supply),
     region: text("region"),
     effective_from: effectiveFrom,
     service_fee_basis: text("service_fee_basis")
@@ -56,8 +49,8 @@ export function parseImportManifest(manifest: unknown) {
 
 export type ImportManifest = ReturnType<typeof parseImportManifest>;
 
-export function extractCandidate(manifest: ImportManifest, workbook: Buffer): Candidate {
-  const { source } = manifest;
+export function extractCandidate(manifest: ImportManifest, workbook: Buffer, supplyWorkbook?: Buffer): Candidate {
+  const { source, supply, change, governance, region, effective_from, service_fee_basis } = manifest;
   const { sheet_name: sheetName, row_number: rowNumber, price_cell: priceCell } = source;
   const digest = sha256(workbook);
   if (digest !== source.sha256) throw new Error("原表与导入清单的 SHA-256 不一致");
@@ -71,14 +64,21 @@ export function extractCandidate(manifest: ImportManifest, workbook: Buffer): Ca
   const productSystem = sheet[`B${rowNumber}`]?.v;
   const applicant = sheet[`E${rowNumber}`]?.v;
   const amount = sheet[priceCell]?.v;
+  const amountText = typeof amount === "number" ? amount.toFixed(2) : "";
+  const validAmount = typeof amount === "number" && /^\d{1,10}\.\d{2}$/.test(amountText) &&
+    amount > 0 && Number(amountText) === amount;
   if (!Number.isSafeInteger(sheet[`A${rowNumber}`]?.v) ||
       typeof productSystem !== "string" || !productSystem.trim() ||
       typeof applicant !== "string" || !applicant.trim() ||
-      typeof amount !== "number" || !Number.isSafeInteger(amount) || amount <= 0 ||
+      !validAmount ||
       sheet[priceCell].f) {
     throw new Error(`所选位置 ${sheetName}!${priceCell} 不是有效的产品系统中选价`);
   }
 
+  if (manifest.governance?.category_composition &&
+      manifest.governance.category_composition.product_system !== productSystem.trim()) {
+    throw new Error("类别组成与原表产品系统类别不一致");
+  }
   const identity = [source.notice_url, source.attachment_url, digest, sheetName, rowNumber];
   const originalRows = [2, 3, 4, rowNumber].map((number) => ({
     number,
@@ -87,12 +87,28 @@ export function extractCandidate(manifest: ImportManifest, workbook: Buffer): Ca
       return cell?.w ?? String(cell?.v ?? "");
     })
   }));
+  if (Boolean(supply) !== Boolean(supplyWorkbook)) {
+    throw new Error("供应清单须同时提供清单信息和原始工作簿");
+  }
+  const supporting = supply && supplyWorkbook ? extractSupplyEvidence(supply, supplyWorkbook, {
+    product_system: productSystem.trim(), applicant: applicant.trim(), amount
+  }) : undefined;
+  const details = supporting ? {
+    category_composition: governance?.category_composition ?? null,
+    unresolved: governance?.unresolved ?? [],
+    ...supporting
+  } : governance;
+  const sourcePriceId = "aj_" + sha256(JSON.stringify(identity)).slice(0, 32);
+  const candidateId = change
+    ? "aj_" + sha256(JSON.stringify([sourcePriceId, change.operation, change.target_price_id,
+      change.target_record_version, details, region, effective_from, service_fee_basis])).slice(0, 32)
+    : sourcePriceId;
   return {
-    price_id: "aj_" + sha256(JSON.stringify(identity)).slice(0, 32),
-    amount: amount.toFixed(2),
+    price_id: candidateId, source_price_id: sourcePriceId,
+    amount: amountText,
     product_system: productSystem.trim(),
     applicant: applicant.trim(),
-    ...manifest,
+    source, change, governance: details, region, effective_from, service_fee_basis,
     original_rows: originalRows
   };
 }

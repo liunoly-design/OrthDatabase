@@ -1,6 +1,7 @@
 import { pipeline } from "node:stream/promises";
 import express from "express";
 import type { ErrorRequestHandler, Request, Response } from "express";
+import { publishedPriceId, type ReviewCandidate } from "./price-store.ts";
 import { candidatePage, queuePage, sourcesPage, tasksPage, workbenchScript } from "./workbench.ts";
 
 export function createOperationsWeb(api: URL, applicationOrigin?: URL) {
@@ -70,11 +71,18 @@ export function createOperationsWeb(api: URL, applicationOrigin?: URL) {
     const { priceId } = req.params;
     const response = await requestApi(req, res, `candidates/${priceId}`);
     if (!response) return;
-    const publicPriceUrl = applicationOrigin ? new URL(`/api/v1/prices/${priceId}`, applicationOrigin).href : null;
-    res.type("html").send(candidatePage(await response.json(), publicPriceUrl));
+    const candidate: ReviewCandidate = await response.json();
+    const publishedId = publishedPriceId(candidate);
+    const publicPriceUrl = applicationOrigin ? new URL(`/api/v1/prices/${publishedId}`, applicationOrigin).href : null;
+    res.type("html").send(candidatePage(candidate, publicPriceUrl));
   });
-  router.get("/candidates/:priceId/attachment", async (req, res) => {
-    const response = await requestApi(req, res, `candidates/${req.params.priceId}/attachment`);
+  router.get("/candidates/:priceId/:document", async (req, res) => {
+    const { priceId, document } = req.params;
+    if (document !== "attachment" && document !== "supply") {
+      res.sendStatus(404);
+      return;
+    }
+    const response = await requestApi(req, res, `candidates/${priceId}/${document}`);
     if (!response) return;
     for (const name of ["content-type", "content-disposition"]) {
       const value = response.headers.get(name);

@@ -5,7 +5,9 @@ import { get } from "node:https";
 import { saveAttachment } from "./attachments.ts";
 import { attachmentRoot, connect } from "./database.ts";
 import { extractCandidate, parseImportManifest } from "./price-import.ts";
-import { addCandidate } from "./price-store.ts";
+import { parserVersion, skillVersion } from "./governance-input.ts";
+import { addCandidate, ImportConflict, publishedPriceId } from "./price-store.ts";
+import { supplyParserVersion } from "./supply-evidence.ts";
 
 async function downloadWorkbook(url: string, signal: AbortSignal) {
   const response = await new Promise<IncomingMessage>((resolve, reject) => {
@@ -31,7 +33,7 @@ async function downloadWorkbook(url: string, signal: AbortSignal) {
   return Buffer.concat(chunks, size);
 }
 
-export async function collectPrice(manifestFile: string, workbookFile: string | undefined, databaseVariable: string) {
+export async function collectPrice(manifestFile: string, workbookFile: string | undefined, databaseVariable: string, supplyFile?: string) {
   const manifest = parseImportManifest(JSON.parse(await readFile(manifestFile, "utf8")));
   const source = manifest.source;
   const taskId = randomUUID();
@@ -55,9 +57,11 @@ export async function collectPrice(manifestFile: string, workbookFile: string | 
         VALUES ($1, $2, $3) ON CONFLICT (notice_url) DO NOTHING
       `, [source.notice_url, source.notice_title, source.publisher]);
       await client.query(`
-        INSERT INTO orth_governance.collection_task (task_id, notice_url, attachment_url, sha256, sheet_name, row_number)
-        VALUES ($1, $2, $3, $4, $5, $6)
-      `, [taskId, source.notice_url, source.attachment_url, source.sha256, source.sheet_name, source.row_number]);
+        INSERT INTO orth_governance.collection_task
+          (task_id, notice_url, attachment_url, sha256, sheet_name, row_number, skill_version, parser_version, supply_manifest)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `, [taskId, source.notice_url, source.attachment_url, source.sha256, source.sheet_name, source.row_number, skillVersion,
+        manifest.supply ? parserVersion + "+" + supplyParserVersion : parserVersion, manifest.supply]);
 
       try {
         const workbook = workbookFile
@@ -66,10 +70,17 @@ export async function collectPrice(manifestFile: string, workbookFile: string | 
           })
           : await downloadWorkbook(source.attachment_url, shutdown.signal);
         shutdown.signal.throwIfAborted();
-        const candidate = extractCandidate(manifest, workbook);
-        await saveAttachment(attachmentRoot(), source.sha256, workbook).catch((cause: unknown) => {
+        const supplyWorkbook = supplyFile ? await readFile(supplyFile, { signal: shutdown.signal }).catch((cause: unknown) => {
+          throw new Error("无法读取本地供应清单", { cause });
+        }) : undefined;
+        const candidate = extractCandidate(manifest, workbook, supplyWorkbook);
+        const archive = attachmentRoot();
+        try {
+          await saveAttachment(archive, source.sha256, workbook);
+          if (manifest.supply && supplyWorkbook) await saveAttachment(archive, manifest.supply.sha256, supplyWorkbook, "xlsx");
+        } catch (cause) {
           throw new Error("无法保存留档原表", { cause });
-        });
+        }
         shutdown.signal.throwIfAborted();
         await client.query("BEGIN");
         try {
@@ -85,15 +96,19 @@ export async function collectPrice(manifestFile: string, workbookFile: string | 
           await client.query("ROLLBACK");
           throw error;
         }
-        return { task_id: taskId, price_id: candidate.price_id };
+        return {
+          task_id: taskId,
+          price_id: publishedPriceId(candidate),
+          ...(candidate.change ? { candidate_id: candidate.price_id } : {})
+        };
       } catch (cause) {
         const error = shutdown.signal.aborted ? shutdown.signal.reason : cause;
         const message = error instanceof Error && !("code" in error) ? error.message : "采集任务处理失败";
         try {
           await client.query(`
-            UPDATE orth_governance.collection_task SET status = 'failed', error = $2, finished_at = now()
+            UPDATE orth_governance.collection_task SET status = 'failed', error = $2, conflict = $3, finished_at = now()
             WHERE task_id = $1 AND status = 'running'
-          `, [taskId, message.slice(0, 500)]);
+          `, [taskId, message.slice(0, 500), error instanceof ImportConflict ? error.details : null]);
         } catch (recordError) {
           throw new AggregateError([error, recordError], "无法记录采集任务失败");
         }

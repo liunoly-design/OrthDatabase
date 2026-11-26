@@ -1,6 +1,7 @@
 import type { Pool } from "pg";
-import type { ReviewStatus } from "./price-store.ts";
+import type { ImportConflictDetails, ReviewStatus } from "./price-store.ts";
 import { candidateStatusColumn } from "./price-store.ts";
+import type { parseSupplyManifest } from "./supply-evidence.ts";
 
 export interface CollectionSource {
   notice_url: string;
@@ -24,6 +25,10 @@ export interface CollectionTask {
   candidate_id: string | null;
   candidate_status: ReviewStatus | null;
   error: string | null;
+  conflict: ImportConflictDetails | null;
+  skill_version: string | null;
+  supply_manifest: ReturnType<typeof parseSupplyManifest>;
+  parser_version: string | null;
 }
 
 export async function listSources(pool: Pool) {
@@ -44,6 +49,7 @@ export async function listTasks(pool: Pool) {
   const { rows } = await pool.query<CollectionTask>(`
     SELECT task.task_id, task.notice_url, task.attachment_url, task.sha256,
            task.sheet_name, task.row_number, task.started_at, task.finished_at, task.candidate_id, task.error,
+           task.conflict, task.skill_version, task.parser_version, task.supply_manifest,
            CASE WHEN task.status = 'running' AND NOT EXISTS (
                SELECT 1 FROM pg_catalog.pg_stat_activity AS session
                WHERE session.datname = current_database()
@@ -53,7 +59,7 @@ export async function listTasks(pool: Pool) {
     FROM orth_governance.collection_task AS task
     JOIN orth_governance.collection_source AS s USING (notice_url)
     LEFT JOIN orth_governance.import_candidate AS c ON c.price_id = task.candidate_id
-    LEFT JOIN orth_catalog.price_record AS published ON published.price_id = c.price_id
+    LEFT JOIN orth_catalog.publication_revision AS published ON published.candidate_id = c.price_id
     ORDER BY task.started_at DESC, task.task_id
   `);
   return rows;

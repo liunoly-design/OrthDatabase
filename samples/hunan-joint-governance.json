@@ -1,0 +1,71 @@
+{
+  "notice_title": "湖南省医疗保障局关于做好人工关节集中带量采购协议期满接续中选结果执行工作的通知",
+  "publisher": "湖南省医疗保障局",
+  "notice_url": "https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/t20240919_33458275.html",
+  "attachment_title": "附件1 国家组织人工关节集中带量采购协议期满接续中选结果",
+  "attachment_url": "https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/33458275/files/0ac80457057341528553dae98aee88b0.xls",
+  "sha256": "b6af63a9ad50d50b05025319225a000065c1b2ffc05505d49fa9e361a87bd7f5",
+  "sheet_name": "Sheet1",
+  "row_number": 5,
+  "region": "湖南省",
+  "effective_from": "2024-10-15",
+  "service_fee_basis": "含伴随服务费",
+  "governance": {
+    "category_composition": {
+      "product_system": "合金-聚乙烯类髋关节产品系统",
+      "members": [
+        {
+          "name": "股骨柄",
+          "quantity": 1,
+          "unit": "件"
+        },
+        {
+          "name": "股骨头",
+          "quantity": 1,
+          "unit": "件"
+        },
+        {
+          "name": "髋臼内衬",
+          "quantity": 1,
+          "unit": "件"
+        },
+        {
+          "name": "髋臼杯",
+          "quantity": 1,
+          "unit": "件"
+        }
+      ],
+      "note": "湖南按实际需求使用髋臼螺钉。采购文件的标准报价包含两枚髋臼螺钉。",
+      "evidence": [
+        {
+          "title": "湖南省医疗保障局关于做好人工关节集中带量采购协议期满接续中选结果执行工作的通知",
+          "url": "https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/t20240919_33458275.html",
+          "section": "一（二）1、三（四）"
+        },
+        {
+          "title": "人工关节集中带量采购协议期满接续采购文件（GH-HD2024-1）",
+          "url": "https://ylbzj.qdn.gov.cn/xwzx_500425/tzgg_5823021/202405/P020240501382474157441.pdf",
+          "page": 26,
+          "sha256": "44a618be0732fa865fd53cdbab83c3aa4fd5329a9a45c5aad1ab5ae6e0f6ce13"
+        },
+        {
+          "title": "人工关节集中带量采购协议期满接续采购文件（GH-HD2024-1）",
+          "url": "https://ylbzj.qdn.gov.cn/xwzx_500425/tzgg_5823021/202405/P020240501382474157441.pdf",
+          "page": 27,
+          "sha256": "44a618be0732fa865fd53cdbab83c3aa4fd5329a9a45c5aad1ab5ae6e0f6ce13"
+        }
+      ]
+    },
+    "unresolved": [
+      "湖南中选表未列具体系统编号、包装数量、部件独立价格或部件标识。",
+      "27 位医保耗材代码、UDI-DI 及包装映射待按品规继续核实。"
+    ]
+  },
+  "supply": {
+    "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+    "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+    "notice_url": "https://hbyxjzcg.cn/work/show25003.html",
+    "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+    "system_code": "GH0101003129"
+  }
+}

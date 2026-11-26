@@ -14,6 +14,9 @@ test("PostgreSQL 应用、治理、Worker 和发布登录分别遵循治理区�
   const { pool: publisher } = await database.login("orth_publisher");
 
   assert.equal((await application.query("SELECT price_id FROM orth_catalog.price_v1")).rowCount, 0);
+  assert.equal((await application.query("SELECT price_id FROM orth_catalog.price_evidence_v1")).rowCount, 0);
+  await assert.rejects(application.query("SELECT published_by FROM orth_catalog.publication_revision"), insufficientPrivilege);
+  await assert.rejects(application.query("DELETE FROM orth_catalog.publication_revision"), insufficientPrivilege);
   await assert.rejects(application.query("SELECT price_id FROM orth_governance.import_candidate"), insufficientPrivilege);
   await assert.rejects(application.query("UPDATE orth_governance.import_candidate SET reviewed_at = now()"), insufficientPrivilege);
   await assert.rejects(application.query("SELECT published_by FROM orth_catalog.price_record"), insufficientPrivilege);
@@ -39,6 +42,7 @@ test("PostgreSQL 应用、治理、Worker 和发布登录分别遵循治理区�
   await assert.rejects(application.query("SELECT task_id FROM orth_governance.collection_task"), insufficientPrivilege);
   await assert.rejects(application.query("SELECT publisher FROM orth_governance.collection_source"), insufficientPrivilege);
   await assert.rejects(worker.query("UPDATE orth_governance.import_candidate SET reviewed_at = now()"), insufficientPrivilege);
+  await assert.rejects(worker.query("SELECT price_id FROM orth_catalog.price_evidence_v1"), insufficientPrivilege);
   await assert.rejects(worker.query("SELECT orth_catalog.publish_price('test', 'test')"), insufficientPrivilege);
   await assert.rejects(worker.query("SELECT account_id FROM orth_app.account"), insufficientPrivilege);
 

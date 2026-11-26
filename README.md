@@ -8,14 +8,27 @@
 
 `samples/hunan-joint-results.xls` 是原表字节快照，SHA-256 记录在同目录清单中。导入器从原表读取所选行的金额、产品系统和申报企业，从清单读取官方链接、地区与执行口径。工作簿按哈希留档，候选与发布状态存在 PostgreSQL。[发布快照](samples/hunan-joint-results.published.json) 提供双方可复用的期望响应值。
 
+### 治理 Skill 验收
+
+项目 [数据治理 Skill](.agents/skills/orth-price-governance/SKILL.md) 说明如何从官方公告、附件和供应清单生成候选，并交给运营复核。实际样本使用湖南正式结果和执行通知，补充湖北省公共资源交易中心发布的同轮次供应清单。湖南原表仍按企业与产品系统类别计价。选取同价的供应系统 `GH0101003129` 核对部件组成和注册证关联。其股骨柄的注册证号为 `国械注准20173130995`，可定位到 `系统表!B9734,K9734,Q9734`。 [湖北供应清单公告](https://hbyxjzcg.cn/work/show25003.html) · [官方补充原表](https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx)
+
+下载补充工作簿并核对 [治理样本清单](samples/hunan-joint-governance.json) 中的 SHA-256。在空的开发库中运行下方命令，然后从运营 Web 下载留档、比对候选、复核并发布。在已有首条价格的开发库中，按 Skill 的追加证据流程填写 `change`。
+
+```sh
+npm run start:worker -- samples/hunan-joint-governance.json samples/hunan-joint-results.xls /path/to/official-supply.xlsx
+curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc/evidence
+```
+
+运行全量测试时，可设置 `ORTH_TEST_SUPPLY_WORKBOOK=/path/to/official-supply.xlsx`，让独立进程联调用例同时核对供应清单原件、组成、标识和公开版本。省略该变量时，测试使用仓库内的真实湖南中选表和类别组成证据。冲突和官方更正场景使用隔离测试库中的演练副本。
+
 ## 数据库分权
 
 | PostgreSQL 运行角色 | 授权 |
 | --- | --- |
-| `orth_governance` | 读取官方信源、采集任务和候选，记录复核结果，读取正式区的 `price_id` 来显示发布状态。兼容手工导入入口沿用此登录，进入与 Worker 相同的采集流程。 |
+| `orth_governance` | 读取官方信源、采集任务和候选，记录复核结果，读取正式区的候选发布状态和发布人。兼容手工导入入口沿用此登录，进入与 Worker 相同的采集流程。 |
 | `orth_worker` | 登记官方信源和采集任务，读写导入所需候选字段。 |
-| `orth_publisher` | 调用 `orth_catalog.publish_price`，在单次事务内将已复核候选写入正式区。 |
-| `orth_application` | 只读 `orth_catalog.price_v1`，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
+| `orth_publisher` | 调用 `orth_catalog.publish_price`，在单次事务内将已复核候选和版本证据写入正式区。 |
+| `orth_application` | 只读 `orth_catalog.price_v1` 和 `orth_catalog.price_evidence_v1`，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
 
 ## 本地复现
 
@@ -99,7 +112,7 @@ curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 | --- | --- | --- |
 | `npm run build:governance` | `node dist/governance/start-governance.js` | `127.0.0.1:3001` |
 | `npm run build:operations` | `node dist/operations/start-operations.js` | `127.0.0.1:3002` |
-| `npm run build:worker` | `node dist/worker/start-worker.js <manifest.json> [workbook.xls]` | 单次任务 |
+| `npm run build:worker` | `node dist/worker/start-worker.js <manifest.json> [workbook.xls] [supply.xlsx]` | 单次任务 |
 
 部署时分发对应的输出目录和根目录的 npm 清单及锁文件，执行 `npm ci --omit=dev` 安装运行依赖。HTTP 服务的监听地址和端口可用 `HOST` 和 `PORT` 配置。数据库迁移在部署前单独执行一次。
 
