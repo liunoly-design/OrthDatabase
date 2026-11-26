@@ -1,0 +1,5 @@
+node_modules/
+.orth-data/
+.env
+project.private.config.json
+.DS_Store

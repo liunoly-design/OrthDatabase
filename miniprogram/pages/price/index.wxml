@@ -1,0 +1,28 @@
+<view class="page">
+  <form bindsubmit="searchPrice" class="card">
+    <label for="price-id" class="label">价格编码</label>
+    <input id="price-id" name="price_id" value="{{priceId}}" placeholder="输入价格编码" />
+    <button form-type="submit" disabled="{{loading}}" loading="{{loading}}">查询价格</button>
+  </form>
+
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <block wx:if="{{price}}">
+    <view class="card">
+      <text class="label">{{price.price_type}}</text>
+      <view class="amount">{{price.amount}} {{price.unit}}</view>
+      <view class="title">{{price.product_system}}</view>
+      <view>{{price.applicant}}</view>
+      <view class="context">{{price.region}}自 {{price.effective_from}} 执行 · {{price.service_fee_basis}}</view>
+    </view>
+
+    <view class="card">
+      <view class="title">官方出处</view>
+      <view class="label">{{price.source.publisher}}</view>
+      <view class="source">{{price.source.notice_title}}</view>
+      <button id="copy-notice" bindtap="copyNotice" size="mini">复制官方公告链接</button>
+      <view class="source">{{price.source.attachment_title}}</view>
+      <view class="location">{{price.source.sheet_name}} · 第 {{price.source.row_number}} 行 · {{price.source.price_cell}}</view>
+      <button id="copy-attachment" bindtap="copyAttachment" size="mini">复制原表链接</button>
+    </view>
+  </block>
+</view>

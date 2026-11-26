@@ -1,0 +1,36 @@
+{
+  "name": "orth-database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "migrate": "node src/migrate.ts",
+    "import:price": "node src/import-price.ts",
+    "start": "node src/start.ts",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p miniprogram/tsconfig.json"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "pg": "^8.23.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^24.19.4",
+    "@types/pg": "^8.23.1",
+    "jsdom": "^29.1.1",
+    "miniprogram-api-typings": "^5.3.1",
+    "miniprogram-simulate": "^1.7.0",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "miniprogram-simulate": {
+      "postcss": "8.5.33"
+    }
+  }
+}

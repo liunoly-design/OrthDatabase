@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020"],
+    "strict": true,
+    "checkJs": true,
+    "noEmit": true,
+    "types": ["miniprogram-api-typings"]
+  },
+  "include": ["app.js", "pages/**/*.js"]
+}

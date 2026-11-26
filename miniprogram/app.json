@@ -1,0 +1,10 @@
+{
+  "pages": ["pages/price/index"],
+  "window": {
+    "navigationBarTitleText": "骨科集采查价",
+    "navigationBarBackgroundColor": "#f3f7f6",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f3f7f6"
+  },
+  "style": "v2"
+}

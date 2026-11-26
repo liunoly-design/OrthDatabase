@@ -1,0 +1,9 @@
+{
+  "compileType": "miniprogram",
+  "miniprogramRoot": "miniprogram/",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": false,
+    "es6": true
+  }
+}
