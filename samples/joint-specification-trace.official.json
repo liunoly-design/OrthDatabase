@@ -1,0 +1,924 @@
+[
+  {
+    "kind": "specification",
+    "specification": {
+      "id": "hb-gh-hd2024-1-7d1c83c1-da96-11e9-953f-fa163e0a8baf",
+      "name": "髋关节假体-股骨柄",
+      "registrant": "天津正天医疗器械有限公司",
+      "model": "GB-6",
+      "specification": "154mm",
+      "evidence": [
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "产品表",
+          "row_number": 5840,
+          "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+        },
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "规格型号表",
+          "row_number": 99454,
+          "cells": ["A99454", "B99454", "E99454", "N99454", "O99454", "Q99454"]
+        }
+      ]
+    },
+    "identifiers": [
+      {
+        "id": "current-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173130995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99454,
+            "cells": ["A99454", "N99454", "O99454", "Q99454"]
+          },
+          {
+            "title": "国家药监局医疗器械唯一标识数据库｜髋关节假体 06921814268520",
+            "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=5fe74b47-ef2d-4fd8-9335-974595d327bf",
+            "section": "产品标识基本信息：最小销售单元产品标识、使用单元数量、注册人、型号规格、注册证编号"
+          }
+        ]
+      },
+      {
+        "id": "former-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173460995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "via_component": "procurement-component",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99454,
+            "cells": ["A99454", "B99454", "N99454", "O99454", "Q99454"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          }
+        ]
+      },
+      {
+        "id": "procurement-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2024-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99454,
+            "cells": ["A99454", "B99454"]
+          }
+        ]
+      },
+      {
+        "id": "insurance",
+        "scheme": "nhsa_27",
+        "value": "C03440210701011018840000657",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99454,
+            "cells": ["A99454", "B99454", "F99454", "N99454", "O99454", "Q99454"]
+          }
+        ]
+      },
+      {
+        "id": "udi",
+        "scheme": "udi_di",
+        "value": "06921814268520",
+        "packaging": {
+          "description": "最小销售单元",
+          "quantity": 1
+        },
+        "evidence": [
+          {
+            "title": "国家药监局医疗器械唯一标识数据库｜髋关节假体 06921814268520",
+            "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=5fe74b47-ef2d-4fd8-9335-974595d327bf",
+            "section": "产品标识基本信息：最小销售单元产品标识、使用单元数量、注册人、型号规格、注册证编号"
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99454,
+            "cells": ["N99454", "O99454", "P99454", "Q99454"]
+          }
+        ]
+      },
+      {
+        "id": "shenzhen-first-round-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2021-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "部件规格型号表",
+            "row_number": 172108,
+            "cells": ["A172108", "B172108", "C172108", "D172108", "E172108", "Q172108", "R172108", "U172108", "W172108"]
+          }
+        ]
+      }
+    ],
+    "prices": [],
+    "unresolved": [
+      "湖北供应清单及 UDI 记录未公开两证原件和独立有效期。"
+    ]
+  },
+  {
+    "kind": "specification",
+    "specification": {
+      "id": "hb-gh-hd2024-1-7d1c8d5a-da96-11e9-953f-fa163e0a8baf",
+      "name": "髋关节假体-股骨柄",
+      "registrant": "天津正天医疗器械有限公司",
+      "model": "GB-6",
+      "specification": "125mm",
+      "evidence": [
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "产品表",
+          "row_number": 5840,
+          "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+        },
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "规格型号表",
+          "row_number": 99456,
+          "cells": ["A99456", "B99456", "E99456", "N99456", "O99456", "Q99456"]
+        }
+      ]
+    },
+    "identifiers": [
+      {
+        "id": "current-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173130995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99456,
+            "cells": ["A99456", "N99456", "O99456", "Q99456"]
+          },
+          {
+            "title": "国家药监局医疗器械唯一标识数据库｜髋关节假体 06921814258644",
+            "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=13cb40c7-1482-48c6-b89d-fc4d92346250",
+            "section": "产品标识基本信息：最小销售单元产品标识、使用单元数量、注册人、型号规格、注册证编号"
+          }
+        ]
+      },
+      {
+        "id": "former-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173460995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "via_component": "procurement-component",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99456,
+            "cells": ["A99456", "B99456", "N99456", "O99456", "Q99456"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          }
+        ]
+      },
+      {
+        "id": "procurement-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2024-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99456,
+            "cells": ["A99456", "B99456"]
+          }
+        ]
+      },
+      {
+        "id": "insurance",
+        "scheme": "nhsa_27",
+        "value": "C03440210701011018840000653",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99456,
+            "cells": ["A99456", "B99456", "F99456", "N99456", "O99456", "Q99456"]
+          }
+        ]
+      },
+      {
+        "id": "udi",
+        "scheme": "udi_di",
+        "value": "06921814258644",
+        "packaging": {
+          "description": "最小销售单元",
+          "quantity": 1
+        },
+        "evidence": [
+          {
+            "title": "国家药监局医疗器械唯一标识数据库｜髋关节假体 06921814258644",
+            "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=13cb40c7-1482-48c6-b89d-fc4d92346250",
+            "section": "产品标识基本信息：最小销售单元产品标识、使用单元数量、注册人、型号规格、注册证编号"
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99456,
+            "cells": ["N99456", "O99456", "P99456", "Q99456"]
+          }
+        ]
+      },
+      {
+        "id": "shenzhen-first-round-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2021-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "部件规格型号表",
+            "row_number": 172109,
+            "cells": ["A172109", "B172109", "C172109", "D172109", "E172109", "Q172109", "R172109", "U172109", "W172109"]
+          }
+        ]
+      }
+    ],
+    "prices": [],
+    "unresolved": [
+      "湖北供应清单及 UDI 记录未公开两证原件和独立有效期。",
+      "深圳部件规格型号表 H172109、P172109 的旧 20 位码及流水号不能直接拼接为品规旧码。同一组合也见有领型未中选件 G112940、O112940，与中选无领件口径不同。"
+    ]
+  },
+  {
+    "kind": "specification",
+    "specification": {
+      "id": "hb-gh-hd2024-1-7d1c918a-da96-11e9-953f-fa163e0a8baf",
+      "name": "髋关节假体-股骨柄",
+      "registrant": "天津正天医疗器械有限公司",
+      "model": "GB-6",
+      "specification": "152mm",
+      "evidence": [
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "产品表",
+          "row_number": 5840,
+          "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+        },
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "规格型号表",
+          "row_number": 99458,
+          "cells": ["A99458", "B99458", "E99458", "N99458", "O99458", "Q99458"]
+        }
+      ]
+    },
+    "identifiers": [
+      {
+        "id": "current-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173130995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99458,
+            "cells": ["A99458", "N99458", "O99458", "Q99458"]
+          }
+        ]
+      },
+      {
+        "id": "former-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173460995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "via_component": "procurement-component",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99458,
+            "cells": ["A99458", "B99458", "N99458", "O99458", "Q99458"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          }
+        ]
+      },
+      {
+        "id": "procurement-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2024-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99458,
+            "cells": ["A99458", "B99458"]
+          }
+        ]
+      },
+      {
+        "id": "insurance",
+        "scheme": "nhsa_27",
+        "value": "C03440210701011018840000656",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99458,
+            "cells": ["A99458", "B99458", "F99458", "N99458", "O99458", "Q99458"]
+          }
+        ]
+      },
+      {
+        "id": "shenzhen-first-round-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2021-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "部件规格型号表",
+            "row_number": 172110,
+            "cells": ["A172110", "B172110", "C172110", "D172110", "E172110", "Q172110", "R172110", "U172110", "W172110"]
+          }
+        ]
+      }
+    ],
+    "prices": [],
+    "unresolved": [
+      "湖北供应清单及 UDI 记录未公开两证原件和独立有效期。",
+      "规格型号表 P99458 的药监UDI码 06921814258675 待取得药监局包装详情后复核。"
+    ]
+  },
+  {
+    "kind": "specification",
+    "specification": {
+      "id": "hb-gh-hd2024-1-7d1cc992-da96-11e9-953f-fa163e0a8baf",
+      "name": "髋关节假体-股骨柄",
+      "registrant": "天津正天医疗器械有限公司",
+      "model": "GB-6",
+      "specification": "150mm",
+      "evidence": [
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "产品表",
+          "row_number": 5840,
+          "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+        },
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "规格型号表",
+          "row_number": 99461,
+          "cells": ["A99461", "B99461", "E99461", "N99461", "O99461", "Q99461"]
+        }
+      ]
+    },
+    "identifiers": [
+      {
+        "id": "current-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173130995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99461,
+            "cells": ["A99461", "N99461", "O99461", "Q99461"]
+          }
+        ]
+      },
+      {
+        "id": "former-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173460995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "via_component": "procurement-component",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99461,
+            "cells": ["A99461", "B99461", "N99461", "O99461", "Q99461"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          }
+        ]
+      },
+      {
+        "id": "procurement-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2024-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99461,
+            "cells": ["A99461", "B99461"]
+          }
+        ]
+      },
+      {
+        "id": "insurance",
+        "scheme": "nhsa_27",
+        "value": "C03440210701011018840000655",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99461,
+            "cells": ["A99461", "B99461", "F99461", "N99461", "O99461", "Q99461"]
+          }
+        ]
+      },
+      {
+        "id": "shenzhen-first-round-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2021-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "部件规格型号表",
+            "row_number": 172111,
+            "cells": ["A172111", "B172111", "C172111", "D172111", "E172111", "Q172111", "R172111", "U172111", "W172111"]
+          }
+        ]
+      }
+    ],
+    "prices": [],
+    "unresolved": [
+      "湖北供应清单及 UDI 记录未公开两证原件和独立有效期。",
+      "规格型号表 P99461 的药监UDI码 06921814258668 待取得药监局包装详情后复核。"
+    ]
+  },
+  {
+    "kind": "specification",
+    "specification": {
+      "id": "hb-gh-hd2024-1-7d1cd76c-da96-11e9-953f-fa163e0a8baf",
+      "name": "髋关节假体-股骨柄",
+      "registrant": "天津正天医疗器械有限公司",
+      "model": "GB-6",
+      "specification": "148mm",
+      "evidence": [
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "产品表",
+          "row_number": 5840,
+          "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+        },
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "规格型号表",
+          "row_number": 99465,
+          "cells": ["A99465", "B99465", "E99465", "N99465", "O99465", "Q99465"]
+        }
+      ]
+    },
+    "identifiers": [
+      {
+        "id": "current-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173130995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99465,
+            "cells": ["A99465", "N99465", "O99465", "Q99465"]
+          }
+        ]
+      },
+      {
+        "id": "former-cert",
+        "scheme": "registration_number",
+        "value": "国械注准20173460995",
+        "certificate": {
+          "valid_from": null,
+          "valid_to": null
+        },
+        "via_component": "procurement-component",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99465,
+            "cells": ["A99465", "B99465", "N99465", "O99465", "Q99465"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          }
+        ]
+      },
+      {
+        "id": "procurement-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2024-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "产品表",
+            "row_number": 5840,
+            "cells": ["C5840", "D5840", "G5840", "H5840", "I5840"]
+          },
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99465,
+            "cells": ["A99465", "B99465"]
+          }
+        ]
+      },
+      {
+        "id": "insurance",
+        "scheme": "nhsa_27",
+        "value": "C03440210701011018840000654",
+        "evidence": [
+          {
+            "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+            "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+            "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+            "sheet_name": "规格型号表",
+            "row_number": 99465,
+            "cells": ["A99465", "B99465", "F99465", "N99465", "O99465", "Q99465"]
+          }
+        ]
+      },
+      {
+        "id": "shenzhen-first-round-component",
+        "scheme": "platform_component_code",
+        "namespace": "gh-hd2021-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf",
+        "evidence": [
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+            "row_number": 5885,
+            "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"]
+          },
+          {
+            "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+            "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+            "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+            "sheet_name": "部件规格型号表",
+            "row_number": 172112,
+            "cells": ["A172112", "B172112", "C172112", "D172112", "E172112", "Q172112", "R172112", "U172112", "W172112"]
+          }
+        ]
+      }
+    ],
+    "prices": [],
+    "unresolved": [
+      "湖北供应清单及 UDI 记录未公开两证原件和独立有效期。",
+      "规格型号表 P99465 的药监UDI码 06921814258651 待取得药监局包装详情后复核。"
+    ]
+  },
+  {
+    "kind": "component_price",
+    "price": {
+      "price_id": "cp_hb_gh_hd2024_1_9734",
+      "component": {
+        "namespace": "gh-hd2024-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf"
+      },
+      "original_registration_numbers": [
+        "国械注准20173130995",
+        "国械注准20173460995"
+      ],
+      "amount": "2600.00",
+      "price_type": "正式中选价",
+      "region": "湖北省",
+      "round_id": "GH-HD2024-1",
+      "hospital_id": null,
+      "pack_quantity": null,
+      "unit": null,
+      "effective_from": null,
+      "effective_to": null,
+      "service_fee_basis": "该部件价格行未单列",
+      "evidence": [
+        {
+          "title": "人工关节集中带量采购协议期满接续采购供应清单（20241115版）",
+          "url": "https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx",
+          "sha256": "b07e64d985de3b0e4436c3cad9cccaf56ba6adf71a45ffb5a4ab76c98baa3d5a",
+          "sheet_name": "系统表",
+          "row_number": 9734,
+          "cells": ["B9734", "H9734", "K9734", "L9734", "O9734", "Q9734", "R9734", "Z9734", "AA9734"],
+          "price_cell": "AA9734"
+        },
+        {
+          "title": "关于执行国家组织人工关节集中带量采购协议期满接续采购中选结果的通知（鄂药采联办〔2024〕19号）",
+          "url": "https://hbyxjzcg.cn/upload/202410/12/202410121724149435.pdf",
+          "sha256": "6abb26f7a1f29f7d9b99608c60594773f3f309ff8a6c24acc65936b5813f63d3",
+          "page": 3
+        },
+        {
+          "title": "关于执行国家组织人工关节集中带量采购协议期满接续采购中选结果的通知（鄂药采联办〔2024〕19号）",
+          "url": "https://hbyxjzcg.cn/upload/202410/12/202410121724149435.pdf",
+          "sha256": "6abb26f7a1f29f7d9b99608c60594773f3f309ff8a6c24acc65936b5813f63d3",
+          "page": 4
+        }
+      ]
+    }
+  },
+  {
+    "kind": "component_price",
+    "price": {
+      "price_id": "cp_sz_gh_hd2021_1_5885",
+      "component": {
+        "namespace": "gh-hd2021-1",
+        "value": "cc20e421-0a13-11ea-99e3-fa163e0a8baf"
+      },
+      "original_registration_numbers": [
+        "国械注准20173130995",
+        "国械注准20173460995"
+      ],
+      "source_nhsa_20": {
+        "current": "C0344021070101101884",
+        "former": "C0344021070100501884"
+      },
+      "amount": "2600.00",
+      "price_type": "正式中选价",
+      "region": "广东省·深圳市",
+      "round_id": "GH-HD2021-1",
+      "hospital_id": null,
+      "pack_quantity": null,
+      "unit": null,
+      "effective_from": "2023-08-01",
+      "effective_to": "2024-07-31",
+      "effective_date_text": "2023年8月1日至2024年7月31日",
+      "service_fee_basis": "该部件价格行未单列",
+      "evidence": [
+        {
+          "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+          "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+          "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+          "sheet_name": "关节产品目录表（包含初次、翻修、肿瘤用等）",
+          "row_number": 5885,
+          "cells": ["C5885", "D5885", "E5885", "I5885", "K5885", "L5885", "R5885", "S5885", "U5885", "V5885"],
+          "price_cell": "S5885"
+        },
+        {
+          "title": "深圳国家组织人工关节集中带量采购第二年｜中选产品目录",
+          "url": "https://hsa.sz.gov.cn/attachment/1/1337/1337924/10729567.xlsx",
+          "sha256": "e3173a4c0bcf7631c395c7f03aeab827b2da5a87c7ece6687b2b3893efafa41c",
+          "sheet_name": "部件规格型号表",
+          "row_number": 172109,
+          "cells": ["A172109", "B172109", "C172109", "D172109", "G172109", "H172109", "O172109", "P172109", "Q172109", "R172109", "U172109", "W172109"]
+        },
+        {
+          "title": "深圳市医疗保障局关于开展国家组织人工关节集中带量采购第二年采购协议签订工作的通知",
+          "url": "https://hsa.sz.gov.cn/szsylbzjwzgkml/szsylbzjwzgkml/qt/tzgg/content/post_10729567.html",
+          "section": "二、采购价格；三、采购周期"
+        }
+      ]
+    }
+  }
+]

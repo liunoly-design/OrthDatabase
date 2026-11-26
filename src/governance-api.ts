@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
+import { createSpecificationGovernanceRouter } from "./specification-governance.ts";
 import { resolve } from "node:path";
 import express from "express";
 import type { ErrorRequestHandler } from "express";
@@ -42,6 +43,7 @@ export function createGovernanceApi({ pool, publisherPool, dataDir, operator }: 
     }
     next();
   });
+  router.use("/specification-candidates", createSpecificationGovernanceRouter(pool, publisherPool, operator.user));
   router.get("/sources", async (_req, res) => {
     res.json(await listSources(pool));
   });
@@ -98,7 +100,7 @@ export function createGovernanceApi({ pool, publisherPool, dataDir, operator }: 
       next(error);
       return;
     }
-    if (error.status === 400 || error.status === 404) {
+    if (error.status === 400 || error.status === 404 || error.status === 413) {
       res.status(error.status).json({ error: error.status === 404 ? "not_found" : "invalid_request" });
       return;
     }

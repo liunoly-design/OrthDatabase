@@ -1,3 +1,4 @@
+import { createSpecificationQueryRouter } from "./specification-query.ts";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import { createHttpApp, handleHttpError } from "../http.ts";
@@ -10,6 +11,7 @@ const assets = fileURLToPath(new URL("./public", import.meta.url));
 export function createApplicationApp(pool: Pool) {
   const app = createHttpApp();
 
+  app.use("/api/v1/specifications", createSpecificationQueryRouter(pool));
   app.use("/api/v1/prices", createPriceQueryRouter(pool));
 
   app.get("/prices", (req, res) => {

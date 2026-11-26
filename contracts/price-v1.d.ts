@@ -45,6 +45,7 @@ export interface SheetLocation {
   sheet_name: string;
   row_number: number;
   cells: string[];
+  price_cell?: string;
 }
 
 export type EvidenceLocation =

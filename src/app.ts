@@ -1,3 +1,4 @@
+import { createSpecificationQueryRouter } from "./application/specification-query.ts";
 import { timingSafeEqual } from "node:crypto";
 import express from "express";
 import { createHttpApp, handleHttpError } from "./http.ts";
@@ -17,6 +18,7 @@ interface Governance {
 export function createApp({ applicationPool, governance }: { applicationPool: Pool; governance?: Governance }) {
   const app = createHttpApp();
 
+  app.use("/api/v1/specifications", createSpecificationQueryRouter(applicationPool));
   app.use("/api/v1/prices", createPriceQueryRouter(applicationPool));
 
   if (governance) app.use("/ops", governanceRouter(governance));

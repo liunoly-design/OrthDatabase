@@ -12,6 +12,8 @@
 
 项目 [数据治理 Skill](.agents/skills/orth-price-governance/SKILL.md) 说明如何从官方公告、附件和供应清单生成候选，并交给运营复核。实际样本使用湖南正式结果和执行通知，补充湖北省公共资源交易中心发布的同轮次供应清单。湖南原表仍按企业与产品系统类别计价。选取同价的供应系统 `GH0101003129` 核对部件组成和注册证关联。其股骨柄的注册证号为 `国械注准20173130995`，可定位到 `系统表!B9734,K9734,Q9734`。 [湖北供应清单公告](https://hbyxjzcg.cn/work/show25003.html) · [官方补充原表](https://hbyxjzcg.cn/upload/202412/24/202412241015272073.xlsx)
 
+新旧证照、27 位医保码及已核验 UDI-DI 的查询、复核发布和湖北、深圳及国家药监局真实验收见 [品规追溯契约](contracts/specification-v1.md)。
+
 下载补充工作簿并核对 [治理样本清单](samples/hunan-joint-governance.json) 中的 SHA-256。在空的开发库中运行下方命令，然后从运营 Web 下载留档、比对候选、复核并发布。在已有首条价格的开发库中，按 Skill 的追加证据流程填写 `change`。
 
 ```sh
@@ -27,8 +29,8 @@ curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc/
 | --- | --- |
 | `orth_governance` | 读取官方信源、采集任务和候选，记录复核结果，读取正式区的候选发布状态和发布人。兼容手工导入入口沿用此登录，进入与 Worker 相同的采集流程。 |
 | `orth_worker` | 登记官方信源和采集任务，读写导入所需候选字段。 |
-| `orth_publisher` | 调用 `orth_catalog.publish_price`，在单次事务内将已复核候选和版本证据写入正式区。 |
-| `orth_application` | 只读 `orth_catalog.price_v1`、`orth_catalog.price_evidence_v1` 和 `orth_catalog.price_search_v1`，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
+| `orth_publisher` | 通过 `orth_catalog.publish_price` 和 `orth_catalog.publish_specification` 事务发布已复核候选和证据。 |
+| `orth_application` | 通过正式发布视图只读查价、价格证据和品规追溯数据，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
 
 ## 本地复现
 

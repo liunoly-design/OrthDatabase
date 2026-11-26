@@ -15,7 +15,7 @@ try {
   const applied = new Set(rows.map(({ filename }) => filename));
   for (const filename of ["001-price-publication.sql", "002-publication-permissions.sql",
     "003-collection-operations.sql", "004-governance-publication.sql", "004-price-search.sql",
-    "005-published-group-on-publication.sql"]) {
+    "005-published-group-on-publication.sql", "006-specification-trace.sql"]) {
     if (applied.has(filename)) continue;
     const sql = await readFile(new URL(`../db/${filename}`, import.meta.url), "utf8");
     await client.query(sql);

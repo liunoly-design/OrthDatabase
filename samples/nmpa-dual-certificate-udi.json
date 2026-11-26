@@ -1,0 +1,88 @@
+{
+  "kind": "specification",
+  "specification": {
+    "id": "nmpa-udi-06930416802339",
+    "name": "同种骨植入材料/同种异体骨修复材料",
+    "registrant": "山西奥瑞生物材料有限公司",
+    "model": "骨粉（冻干表面脱矿）",
+    "specification": "粒径0.05-1.0mm／0.25g",
+    "evidence": [
+      {
+        "title": "国家药监局 UDI 数据库｜06930416802339",
+        "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=27FEFF79846A1CD99863DC7F5ADF68F0",
+        "section": "产品基本信息：产品名称、型号规格、产品描述、注册人"
+      }
+    ]
+  },
+  "identifiers": [
+    {
+      "id": "original-certificate",
+      "scheme": "registration_number",
+      "value": "国械注准20163460428",
+      "certificate": { "valid_from": null, "valid_to": null },
+      "evidence": [
+        {
+          "title": "国家药监局 UDI 数据库｜06930416802339 历史版本 1",
+          "url": "https://udi.nmpa.gov.cn/toDownHis.html?deviceHistoryKey=4679728545A4C72C049BAAB4A67B8142&type=2",
+          "sha256": "d4016144044e82daf2a3ecf420830ae0b3b9686409bdb05a4e5f14ffa9d19823",
+          "section": "版本 1 JSON：versionNumber、zxxsdycpbs、zczbhhzbapzbh、ggxh、cpms"
+        }
+      ]
+    },
+    {
+      "id": "updated-certificate",
+      "scheme": "registration_number",
+      "value": "国械注准20163130428",
+      "certificate": { "valid_from": null, "valid_to": null },
+      "evidence": [
+        {
+          "title": "国家药监局 UDI 数据库｜06930416802339 历史版本 2",
+          "url": "https://udi.nmpa.gov.cn/toDownHis.html?deviceHistoryKey=AD63797CEC53A51E04X38A30787C4FF&type=2",
+          "sha256": "a3828518834194d32f82a74a58d5ef535f0be9e2c59463a75b86b2bc05b7cd69",
+          "section": "版本 2 JSON：versionNumber、zxxsdycpbs、zczbhhzbapzbh、ggxh、cpms"
+        }
+      ]
+    },
+    {
+      "id": "nhsa-0000049",
+      "scheme": "nhsa_27",
+      "value": "C03470210900000100520000049",
+      "evidence": [
+        {
+          "title": "国家药监局 UDI 数据库｜06930416802339",
+          "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=27FEFF79846A1CD99863DC7F5ADF68F0",
+          "section": "产品基本信息：医保耗材分类编码"
+        }
+      ]
+    },
+    {
+      "id": "nhsa-001618",
+      "scheme": "nhsa_27",
+      "value": "C03470210900000100520001618",
+      "evidence": [
+        {
+          "title": "国家药监局 UDI 数据库｜06930416802339",
+          "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=27FEFF79846A1CD99863DC7F5ADF68F0",
+          "section": "产品基本信息：医保耗材分类编码"
+        }
+      ]
+    },
+    {
+      "id": "minimum-sales-unit",
+      "scheme": "udi_di",
+      "value": "06930416802339",
+      "packaging": { "description": "最小销售单元", "quantity": 1 },
+      "evidence": [
+        {
+          "title": "国家药监局 UDI 数据库｜06930416802339",
+          "url": "https://udi.nmpa.gov.cn/showDetailCX.html?deviceRecordKey=27FEFF79846A1CD99863DC7F5ADF68F0",
+          "section": "产品标识基本信息：最小销售单元产品标识、使用单元数量"
+        }
+      ]
+    }
+  ],
+  "prices": [],
+  "unresolved": [
+    "UDI 版本发布日期不代表对应证照的发证日和失效日。证照原件与有效期、两个 27 位码的招采使用时期及价格待核实。"
+  ]
+}

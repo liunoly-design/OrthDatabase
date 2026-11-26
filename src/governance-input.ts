@@ -31,7 +31,7 @@ export function object(value: unknown, field: string): Record<string, unknown> {
 }
 
 export function requiredText(value: unknown, field: string) {
-  if (typeof value !== "string" || !value.trim() || value.length > 2000) throw new Error(`${field} 必须为有效文本`);
+  if (typeof value !== "string" || !value.trim() || value.length > 2000 || value.includes("\0")) throw new Error(`${field} 必须为有效文本`);
   return value.trim();
 }
 
@@ -41,6 +41,17 @@ export function httpsUrl(value: unknown, field: string) {
   return url.href;
 }
 
+export function parseDate(value: unknown, field: string) {
+  if (value === null) return null;
+  const text = requiredText(value, field);
+  const date = new Date(text);
+  if (!/^(?!0000)\d{4}-\d{2}-\d{2}$/.test(text) || Number.isNaN(date.valueOf()) ||
+      date.toISOString().slice(0, 10) !== text) {
+    throw new Error(`${field} 必须是 YYYY-MM-DD 格式的有效日期或 null`);
+  }
+  return text;
+}
+
 export function positiveInteger(value: unknown, field: string) {
   if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1) {
     throw new Error(`${field} 必须为正整数`);
@@ -48,19 +59,21 @@ export function positiveInteger(value: unknown, field: string) {
   return value;
 }
 
-function list<T>(value: unknown, field: string, parse: (entry: unknown) => T, required = false) {
+export function list<T>(value: unknown, field: string, parse: (entry: unknown) => T, required = false) {
   if (!Array.isArray(value) || value.length > 100 || (required && value.length === 0)) {
     throw new Error(`${field} 必须为有效列表`);
   }
   return value.map(parse);
 }
 
-function evidence(value: unknown): EvidenceReference[] {
+export function parseEvidenceReferences(value: unknown): EvidenceReference[] {
   return list(value, "evidence", (entry) => {
     const item = object(entry, "evidence");
-    const reference = { title: requiredText(item.title, "title"), url: httpsUrl(item.url, "url") };
+    const digest = item.sha256 === undefined ? undefined : requiredText(item.sha256, "sha256");
+    if (digest && !/^[a-f0-9]{64}$/.test(digest)) throw new Error("证据 SHA-256 无效");
+    const reference = { title: requiredText(item.title, "title"), url: httpsUrl(item.url, "url"),
+      ...(digest ? { sha256: digest } : {}) };
     if (item.sheet_name !== undefined) {
-      const digest = requiredText(item.sha256, "sha256");
       const rowNumber = positiveInteger(item.row_number, "row_number");
       const cells = list(item.cells, "cells", (cell) => {
         const address = requiredText(cell, "cell");
@@ -69,14 +82,14 @@ function evidence(value: unknown): EvidenceReference[] {
         }
         return address;
       }, true);
-      if (!/^[a-f0-9]{64}$/.test(digest)) throw new Error("表格证据须提供 SHA-256");
+      if (!digest) throw new Error("表格证据须提供 SHA-256");
+      const priceCell = item.price_cell === undefined ? undefined : requiredText(item.price_cell, "price_cell");
+      if (priceCell && !cells.includes(priceCell)) throw new Error("金额单元格须包含在证据坐标中");
       return { ...reference, sha256: digest, sheet_name: requiredText(item.sheet_name, "sheet_name"),
-        row_number: rowNumber, cells };
+        row_number: rowNumber, cells, ...(priceCell ? { price_cell: priceCell } : {}) };
     }
     if (item.page !== undefined) {
-      const digest = item.sha256 === undefined ? undefined : requiredText(item.sha256, "sha256");
-      if (digest && !/^[a-f0-9]{64}$/.test(digest)) throw new Error("证据 SHA-256 无效");
-      return { ...reference, ...(digest ? { sha256: digest } : {}), page: positiveInteger(item.page, "page") };
+      return { ...reference, page: positiveInteger(item.page, "page") };
     }
     return { ...reference, section: requiredText(item.section, "section") };
   }, true);
@@ -94,7 +107,7 @@ export function parseGovernanceEvidence(value: unknown): GovernanceEvidence | nu
         unit: requiredText(member.unit, "unit") };
     }, true);
     composition = { product_system: requiredText(group.product_system, "product_system"), members,
-      ...(group.note === undefined ? {} : { note: requiredText(group.note, "note") }), evidence: evidence(group.evidence) };
+      ...(group.note === undefined ? {} : { note: requiredText(group.note, "note") }), evidence: parseEvidenceReferences(group.evidence) };
   }
   return {
     category_composition: composition,

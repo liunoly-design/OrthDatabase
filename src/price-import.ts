@@ -1,6 +1,6 @@
 import { read, utils } from "xlsx";
 import { sha256 } from "./attachments.ts";
-import { httpsUrl, object, parseChangeRequest, parseGovernanceEvidence, requiredText } from "./governance-input.ts";
+import { httpsUrl, object, parseChangeRequest, parseDate, parseGovernanceEvidence, requiredText } from "./governance-input.ts";
 import { parseSupplyManifest, extractSupplyEvidence } from "./supply-evidence.ts";
 import type { Candidate } from "./price-store.ts";
 
@@ -9,14 +9,7 @@ export function parseImportManifest(input: unknown) {
   const text = (key: string) => requiredText(manifest[key], key);
   const officialUrl = (key: string) => httpsUrl(manifest[key], key);
 
-  const effectiveFrom = manifest.effective_from === null ? null : text("effective_from");
-  if (effectiveFrom !== null) {
-    const date = new Date(effectiveFrom);
-    if (!/^(?!0000)\d{4}-\d{2}-\d{2}$/.test(effectiveFrom) ||
-        Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 10) !== effectiveFrom) {
-      throw new Error("effective_from 必须是 YYYY-MM-DD 格式的有效日期或 null");
-    }
-  }
+  const effectiveFrom = parseDate(manifest.effective_from, "effective_from");
   const sheetName = text("sheet_name");
   const rowNumber = manifest.row_number;
   if (typeof rowNumber !== "number" || !Number.isInteger(rowNumber) ||
