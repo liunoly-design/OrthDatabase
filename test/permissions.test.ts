@@ -5,11 +5,12 @@ import { testDatabase } from "./postgres.ts";
 
 const insufficientPrivilege = { code: "42501" };
 
-test("PostgreSQL 应用、治理和发布登录分别遵循发布区和应用账号区权限", async (t) => {
+test("PostgreSQL 应用、治理、Worker 和发布登录分别遵循治理区、发布区和应用账号区权限", async (t) => {
   const database = await testDatabase(t);
   await database.migrate();
   const { pool: application } = await database.login("orth_application");
   const { pool: governance } = await database.login("orth_governance");
+  const { pool: worker } = await database.login("orth_worker");
   const { pool: publisher } = await database.login("orth_publisher");
 
   assert.equal((await application.query("SELECT price_id FROM orth_catalog.price_v1")).rowCount, 0);
@@ -32,6 +33,14 @@ test("PostgreSQL 应用、治理和发布登录分别遵循发布区和应用账
   await assert.rejects(governance.query("INSERT INTO orth_app.account DEFAULT VALUES"), insufficientPrivilege);
   await assert.rejects(governance.query("SELECT orth_catalog.publish_price('test', 'test')"), insufficientPrivilege);
   await assert.rejects(governance.query("INSERT INTO orth_catalog.price_record (price_id) VALUES ('test')"), insufficientPrivilege);
+
+  assert.equal((await governance.query("SELECT task_id FROM orth_governance.collection_task")).rowCount, 0);
+  assert.equal((await worker.query("SELECT task_id FROM orth_governance.collection_task")).rowCount, 0);
+  await assert.rejects(application.query("SELECT task_id FROM orth_governance.collection_task"), insufficientPrivilege);
+  await assert.rejects(application.query("SELECT publisher FROM orth_governance.collection_source"), insufficientPrivilege);
+  await assert.rejects(worker.query("UPDATE orth_governance.import_candidate SET reviewed_at = now()"), insufficientPrivilege);
+  await assert.rejects(worker.query("SELECT orth_catalog.publish_price('test', 'test')"), insufficientPrivilege);
+  await assert.rejects(worker.query("SELECT account_id FROM orth_app.account"), insufficientPrivilege);
 
   assert.deepEqual((await publisher.query("SELECT orth_catalog.publish_price('test', 'test')")).rows, [{ publish_price: false }]);
   await assert.rejects(publisher.query("SELECT price_id FROM orth_governance.import_candidate"), insufficientPrivilege);

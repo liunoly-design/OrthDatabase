@@ -13,7 +13,7 @@ try {
   `);
   const { rows } = await client.query<{ filename: string }>("SELECT filename FROM orth_migrations.applied");
   const applied = new Set(rows.map(({ filename }) => filename));
-  for (const filename of ["001-price-publication.sql", "002-publication-permissions.sql"]) {
+  for (const filename of ["001-price-publication.sql", "002-publication-permissions.sql", "003-collection-operations.sql"]) {
     if (applied.has(filename)) continue;
     const sql = await readFile(new URL(`../db/${filename}`, import.meta.url), "utf8");
     await client.query(sql);

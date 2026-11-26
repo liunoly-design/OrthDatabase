@@ -27,7 +27,7 @@ export async function testDatabase(t: TestContext) {
   });
   await admin.query(`CREATE DATABASE ${name}`);
 
-  async function login(role?: "orth_application" | "orth_governance" | "orth_publisher") {
+  async function login(role?: "orth_application" | "orth_governance" | "orth_publisher" | "orth_worker") {
     const name = `test_${role ?? "legacy"}_${suffix}`;
     const password = randomBytes(24).toString("hex");
     const membership = role ? ` IN ROLE ${role}` : "";

@@ -15,7 +15,7 @@ export type Candidate = PriceFacts & {
   original_rows: OriginalRow[];
 };
 
-type ReviewStatus = "待复核" | "已复核" | "已发布";
+export type ReviewStatus = "待复核" | "已复核" | "已发布";
 
 export type ReviewCandidate = Candidate & Pick<PublicPrice, "currency" | "unit" | "price_type"> & {
   status: ReviewStatus;
@@ -28,12 +28,13 @@ const priceColumns = `
   '正式中选价' AS price_type, c.product_system, c.applicant, c.region,
   to_char(c.effective_from, 'YYYY-MM-DD') AS effective_from, c.service_fee_basis, c.source`;
 
-const statusColumn = `
-  CASE WHEN published.price_id IS NOT NULL THEN '已发布'
+export const candidateStatusColumn = `
+  CASE WHEN c.price_id IS NULL THEN NULL
+       WHEN published.price_id IS NOT NULL THEN '已发布'
        WHEN c.reviewed_at IS NOT NULL THEN '已复核'
-       ELSE '待复核' END AS status`;
+       ELSE '待复核' END`;
 
-export async function addCandidate(pool: Pool, candidate: Candidate) {
+export async function addCandidate(pool: Pick<Pool, "query">, candidate: Candidate) {
   const { price_id, amount, product_system, applicant, region, effective_from,
     service_fee_basis, source, original_rows } = candidate;
   const values = [price_id, amount, product_system, applicant, region, effective_from,
@@ -66,7 +67,7 @@ export async function getPublicPrice(pool: Pool, priceId: string) {
 
 export async function listCandidates(pool: Pool) {
   const { rows } = await pool.query<CandidateSummary>(`
-    SELECT c.price_id, c.product_system, c.applicant, ${statusColumn}
+    SELECT c.price_id, c.product_system, c.applicant, ${candidateStatusColumn} AS status
     FROM orth_governance.import_candidate AS c LEFT JOIN orth_catalog.price_record AS published USING (price_id)
     ORDER BY c.imported_at DESC, c.price_id
   `);
@@ -75,7 +76,7 @@ export async function listCandidates(pool: Pool) {
 
 export async function getCandidate(pool: Pool, priceId: string) {
   const { rows } = await pool.query<ReviewCandidate>(`
-    SELECT ${priceColumns}, c.original_rows, ${statusColumn}
+    SELECT ${priceColumns}, c.original_rows, ${candidateStatusColumn} AS status
     FROM orth_governance.import_candidate AS c LEFT JOIN orth_catalog.price_record AS published USING (price_id)
     WHERE c.price_id = $1
   `, [priceId]);

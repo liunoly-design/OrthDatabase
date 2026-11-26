@@ -12,13 +12,14 @@
 
 | PostgreSQL 运行角色 | 授权 |
 | --- | --- |
-| `orth_governance` | 读写 `orth_governance.import_candidate` 的导入与复核所需字段，读取正式区的 `price_id` 来显示发布状态。 |
+| `orth_governance` | 读取官方信源、采集任务和候选，记录复核结果，读取正式区的 `price_id` 来显示发布状态。兼容手工导入入口沿用此登录，进入与 Worker 相同的采集流程。 |
+| `orth_worker` | 登记官方信源和采集任务，读写导入所需候选字段。 |
 | `orth_publisher` | 调用 `orth_catalog.publish_price`，在单次事务内将已复核候选写入正式区。 |
 | `orth_application` | 只读 `orth_catalog.price_v1`，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
 
 ## 本地复现
 
-需要 Node.js 24 和 PostgreSQL。用迁移账号连接开发库，在初始化时创建三个权限组。迁移账号需要建 schema 和角色的权限。升级 Issue #2 的库时，迁移账号还需要拥有原 `public` 模式下的两张表。迁移保留已有候选和已发布记录，用新角色授权替换旧表授权。已有执行日期超出公元 0001 至 9999 年时，迁移会报错并回滚。
+需要 Node.js 24 和 PostgreSQL。用迁移账号连接开发库，在初始化时创建四个权限组。迁移账号需要建 schema 和角色的权限。升级 Issue #2 的库时，迁移账号还需要拥有原 `public` 模式下的两张表。迁移保留已有候选和已发布记录，用新角色授权替换旧表授权。已有执行日期超出公元 0001 至 9999 年时，迁移会报错并回滚。
 
 ```sh
 npm ci
@@ -26,32 +27,57 @@ export DATABASE_URL='postgresql://localhost/orthdatabase'
 npm run migrate
 ```
 
-上例使用 PostgreSQL 本地默认登录，按实际迁移账号填写 `DATABASE_URL`。再在 `psql` 中用有角色管理权限的账号配置三个独立登录。开发库如有单独的连接权限策略，同时为三个登录授予该库的 `CONNECT`。
+上例使用 PostgreSQL 本地默认登录，按实际迁移账号填写 `DATABASE_URL`。再在 `psql` 中用有角色管理权限的账号配置四个独立登录。开发库如有单独的连接权限策略，同时为四个登录授予该库的 `CONNECT`。
 
 ```sql
 CREATE ROLE orth_governance_login LOGIN IN ROLE orth_governance;
+CREATE ROLE orth_worker_login LOGIN IN ROLE orth_worker;
 CREATE ROLE orth_publisher_login LOGIN IN ROLE orth_publisher;
 CREATE ROLE orth_application_login LOGIN IN ROLE orth_application;
 \password orth_governance_login
+\password orth_worker_login
 \password orth_publisher_login
 \password orth_application_login
 ```
 
-设置运行账号连接串和后台复核账号。URL 中的密码按 URL 规则编码。
+## 独立运行
+
+在不同进程启动以下入口。将示例连接串里的密码替换成实际值并按 URL 规则编码。治理 API 和 Worker 使用同一个绝对留档目录，跨主机部署时将同一存储挂载给这两个进程。
+
+治理 API 使用治理和发布两个数据库登录。运营账号在这个进程中配置，复核和发布以该运营用户名留痕。
 
 ```sh
 export ORTH_GOVERNANCE_DATABASE_URL='postgresql://orth_governance_login:PASSWORD@localhost/orthdatabase'
 export ORTH_PUBLISHER_DATABASE_URL='postgresql://orth_publisher_login:PASSWORD@localhost/orthdatabase'
-export ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@localhost/orthdatabase'
 export ORTH_OPERATOR_USER='reviewer'
-export ORTH_OPERATOR_PASSWORD='填写本地密码'
-npm run import:price -- samples/hunan-joint-results.json samples/hunan-joint-results.xls
-npm start
+export ORTH_OPERATOR_PASSWORD='填写运营账号密码'
+export ORTH_DATA_DIR="$PWD/.orth-data"
+npm run start:governance
 ```
 
-默认监听 `127.0.0.1:3000`，原表留档目录为 `.orth-data/`，可通过 `ORTH_DATA_DIR` 修改。导入输出 `aj_8ccf6bc8657afcaaa14a3a3e901056fc`。重复导入相同来源、文件版本和行号时复用这个编码。
+运营 Web 把登录请求和操作交给治理 API，使用服务端配置的 API 地址。浏览器在 HTTP Basic 登录提示中输入运营用户名和密码。两个服务默认绑定回环地址。跨主机通信和对外入口应使用 HTTPS，治理 API 应部署在受限网络。
 
-1. 打开 `http://127.0.0.1:3000/ops`，用配置的账号登录。点击候选后可看到原表表头、所选行和价格格，也可下载字节一致的留档工作簿。
+```sh
+ORTH_GOVERNANCE_API_URL='http://127.0.0.1:3001/api/governance/v1' ORTH_APPLICATION_API_ORIGIN='http://127.0.0.1:3000' npm run start:operations
+```
+
+`ORTH_APPLICATION_API_ORIGIN` 用于在已发布候选上显示公开查价链接，可省略。治理 API 提供 `/api/governance/v1/sources`、`/tasks`、`/candidates` 和候选的附件、复核、发布路由。
+
+采集 Worker 每次运行处理一份清单指定的 Excel 明细位置。省略工作簿路径时从清单的官方附件地址下载；离线回放时可在命令末尾加上 `samples/hunan-joint-results.xls`。两种模式都核对清单中的 SHA-256。每次运行都有独立任务记录，重复导入复用原价格编码。Worker 异常退出后，运营端会标记中断的任务；重新执行会生成新任务。可从外部调度器定时执行同一入口。
+
+```sh
+export ORTH_WORKER_DATABASE_URL='postgresql://orth_worker_login:PASSWORD@localhost/orthdatabase'
+export ORTH_DATA_DIR="$PWD/.orth-data"
+npm run start:worker -- samples/hunan-joint-results.json
+```
+
+应用查询 API 使用自己的运行登录，独立于上述进程。
+
+```sh
+ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@localhost/orthdatabase' npm start -- app
+```
+
+1. 打开 `http://127.0.0.1:3002/ops`，登录后查看「官方信源」「采集任务」和「价格复核」。从任务打开候选，核对公告、官方原表、留档文件和高亮价格格。
 2. 点击「确认复核」，再点击「发布价格」。
 3. 执行下方公开查询。导入后及已复核未发布时返回 `404`，发布后返回 `200`。金额是十进制字符串，`source` 提供公告、原表、SHA-256、工作表、行号和价格格。
 
@@ -59,14 +85,26 @@ npm start
 curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 ```
 
-仅运行公开查询 API 可执行 `npm start -- app`。该模式只需要 `ORTH_APPLICATION_DATABASE_URL`。
+## 构建与部署
+
+| 独立构建 | 生成的 Node.js 24 入口 | 默认监听 |
+| --- | --- | --- |
+| `npm run build:governance` | `node dist/governance/start-governance.js` | `127.0.0.1:3001` |
+| `npm run build:operations` | `node dist/operations/start-operations.js` | `127.0.0.1:3002` |
+| `npm run build:worker` | `node dist/worker/start-worker.js <manifest.json> [workbook.xls]` | 单次任务 |
+
+部署时分发对应的输出目录和根目录的 npm 清单及锁文件，执行 `npm ci --omit=dev` 安装运行依赖。HTTP 服务的监听地址和端口可用 `HOST` 和 `PORT` 配置。数据库迁移在部署前单独执行一次。
 
 在微信开发者工具导入仓库根目录。启动页支持输入价格编码，也可用自定义编译条件打开 `pages/price/index?price_id=aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情显示计价单位和 `Sheet1 · 第 5 行 · G5`，并可复制官方公告链接和原表下载链接。仓库中的游客配置连接本地 API。接入真机或发布时，在 `miniprogram/app.js` 配置实际 HTTPS API 地址并设置小程序请求合法域名。
 
 ## 验证
 
 ```sh
-TEST_DATABASE_URL='postgresql://localhost/postgres' npm test
+export TEST_DATABASE_URL='postgresql://localhost/postgres'
+npm run test:governance-api
+npm run test:worker
+npm run test:governance
+npm test
 npm run typecheck
 ```
 
