@@ -1,6 +1,8 @@
 import express from "express";
 import type { Pool } from "pg";
-import type { PriceSearchFilters, PriceSearchResponse, PublicPrice, PublicPriceEvidence } from "../../contracts/price-v1.d.ts";
+import type {
+  PriceSearchFilters, PriceSearchResponse, PublicPriceEvidence, PublicPriceWithCorrection
+} from "../../contracts/price-v1.d.ts";
 
 const exactFilters = [
   "round_id", "published_group", "price_type", "unit", "region",
@@ -56,13 +58,15 @@ export function createPriceQueryRouter(pool: Pool) {
     }
     const { rows: [{ prices, filters }] } = await pool.query<Pick<PriceSearchResponse, "prices" | "filters">>(`
       SELECT (
-        SELECT COALESCE(jsonb_agg(to_jsonb(result) - 'product_alias' ORDER BY price_id), '[]')
+        SELECT COALESCE(jsonb_agg(to_jsonb(result) - 'product_alias' ||
+          jsonb_build_object('superseded_by_price_id', replacement.price_id) ORDER BY result.price_id), '[]')
         FROM (
           SELECT * FROM orth_catalog.price_search_v1
           WHERE ${search.where}
           ORDER BY price_id
           LIMIT ${pageSize + 1}
         ) AS result
+        LEFT JOIN orth_catalog.price_v1 AS replacement ON replacement.supersedes_price_id = result.price_id
       ) AS prices, (
         SELECT jsonb_build_object(${filterOptions})
         FROM orth_catalog.price_search_v1
@@ -81,14 +85,18 @@ export function createPriceQueryRouter(pool: Pool) {
     else res.json(evidence);
   });
   router.get("/:priceId", async (req, res) => {
-    const { rows: [price] } = await pool.query<PublicPrice>(
-      "SELECT * FROM orth_catalog.price_v1 WHERE price_id = $1", [req.params.priceId]
-    );
+    const { rows: [price] } = await pool.query<PublicPriceWithCorrection>(`
+      SELECT price.*, replacement.price_id AS superseded_by_price_id
+      FROM orth_catalog.price_v1 AS price
+      LEFT JOIN orth_catalog.price_v1 AS replacement ON replacement.supersedes_price_id = price.price_id
+      WHERE price.price_id = $1
+    `, [req.params.priceId]);
     if (!price) {
       res.status(404).json({ error: "price_not_found" });
       return;
     }
-    res.json(price);
+    const { superseded_by_price_id, ...snapshot } = price;
+    res.json(req.query.include_correction === "1" ? { ...snapshot, superseded_by_price_id } : snapshot);
   });
   return router;
 }

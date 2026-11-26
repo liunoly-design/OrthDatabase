@@ -2,7 +2,11 @@
 UPDATE orth_catalog.price_record AS price
 SET published_group = orth_catalog.hunan_joint_group(candidate.original_rows, candidate.source)
 FROM orth_governance.import_candidate AS candidate
-WHERE candidate.price_id = price.origin_candidate_id;
+WHERE candidate.price_id = price.origin_candidate_id
+  AND (candidate.source->>'attachment_url', candidate.source->>'sha256',
+       candidate.source->>'sheet_name', candidate.source->>'row_number') =
+      (price.source->>'attachment_url', price.source->>'sha256',
+       price.source->>'sheet_name', price.source->>'row_number');
 
 CREATE FUNCTION orth_catalog.set_published_price_group()
 RETURNS trigger

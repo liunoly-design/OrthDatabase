@@ -124,7 +124,11 @@ export interface PublicPriceEvidence {
   }[];
 }
 
-export type PriceSearchResult = PublicPrice & {
+export type PublicPriceWithCorrection = PublicPrice & {
+  superseded_by_price_id: string | null;
+};
+
+export type PriceSearchResult = PublicPriceWithCorrection & {
   published_group: string | null;
 };
 

@@ -11,7 +11,7 @@ import { promisify } from "node:util";
 import { read, write } from "xlsx";
 
 import { createApp } from "../src/app.ts";
-import { checkMiniPricePage, checkMiniPriceSearch } from "./mini-preview.ts";
+import { checkMiniCorrection, checkMiniPricePage, checkMiniPriceSearch } from "./mini-preview.ts";
 import { testDatabase } from "./postgres.ts";
 import { checkWebPricePage } from "./web-price-preview.ts";
 
@@ -551,4 +551,5 @@ test("治理 Skill 重跑、追加证据、金额冲突及两种更正可沿公�
   const governanceHistory = await (await get(official.price_id, "/evidence")).json();
   assert.equal(governanceHistory.current_governance[0].category_composition, null);
   assert.ok(governanceHistory.revisions[2].governance.category_composition);
+  await checkMiniCorrection(app.url, priceId, official.price_id);
 });

@@ -23,6 +23,8 @@
 
   <view wx:for="{{showDetail ? (price ? [price] : []) : prices}}" wx:key="price_id" class="card">
     <text class="label">{{item.price_type}}</text>
+    <view wx:if="{{item.superseded_by_price_id}}" class="context">已被官方更正</view>
+    <view wx:elif="{{item.supersedes_price_id}}" class="context">官方更正后的价格</view>
     <view class="amount">{{item.amount}} {{item.unit}}</view>
     <view>{{item.product_system}}</view>
     <view class="context">{{item.applicant}}</view>
@@ -44,6 +46,10 @@
     <block wx:if="{{showDetail}}">
       <view class="context">价格编码 {{item.price_id}}</view>
       <button id="share-price" open-type="share" size="mini">分享这条价格</button>
+      <button wx:if="{{item.superseded_by_price_id}}" id="view-corrected-price" bindtap="selectResult"
+        data-price-id="{{item.superseded_by_price_id}}" size="mini">查看更正后价格</button>
+      <button wx:if="{{item.supersedes_price_id}}" id="view-previous-price" bindtap="selectResult"
+        data-price-id="{{item.supersedes_price_id}}" size="mini">查看更正前价格</button>
     </block>
     <button wx:else class="result-link" id="result-{{item.price_id}}" bindtap="selectResult" data-price-id="{{item.price_id}}"
       size="mini">查看价格与出处</button>

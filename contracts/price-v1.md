@@ -58,7 +58,7 @@
 | `product_system` | 按名称精确查询同一产品系统类别的套价。 |
 | `after` | 加载下一页时传入上次返回的 `next_cursor`，其余查询条件保持一致。 |
 
-不同条件取交集。响应的 `prices` 按 `price_id` 升序返回至多 30 项，每项沿用详情字段并补充 `published_group`（未公布时为 `null`）。`filters` 给出全站已发布记录的五类标签值，即使当前条件命中为空也返回。包装内数量的 `null` 可选，未知的轮次和分组不生成标签。`next_cursor` 为 `null` 时已到末页。已知参数的格式无效时返回 `400` 和 `{"error":"invalid_price_search"}`。
+不同条件取交集。响应的 `prices` 按 `price_id` 升序返回至多 30 项，每项沿用详情字段并补充 `published_group`（未公布时为 `null`）和 `superseded_by_price_id`（无正式后继时为 `null`）。小程序详情请求可用 `?include_correction=1` 取得同一后继字段，旧分享仍打开原价格。默认详情响应沿用原 v1 字段。`filters` 给出全站已发布记录的五类标签值，即使当前条件命中为空也返回。包装内数量的 `null` 可选，未知的轮次和分组不生成标签。`next_cursor` 为 `null` 时已到末页。已知参数的格式无效时返回 `400` 和 `{"error":"invalid_price_search"}`。
 
 ## 共享回归样本
 

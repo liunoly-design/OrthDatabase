@@ -19,7 +19,7 @@ npm run start:worker -- samples/hunan-joint-governance.json samples/hunan-joint-
 curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc/evidence
 ```
 
-运行全量测试时，可设置 `ORTH_TEST_SUPPLY_WORKBOOK=/path/to/official-supply.xlsx`，让独立进程联调用例同时核对供应清单原件、组成、标识和公开版本。省略该变量时，测试使用仓库内的真实湖南中选表和类别组成证据。冲突和官方更正场景使用隔离测试库中的演练副本。
+独立进程联调用例默认使用仓库内的真实湖南中选表和类别组成证据。设置 `ORTH_TEST_LIVE_HUNAN=1` 可由 Worker 直采湖南中选原表。设置 `ORTH_TEST_SUPPLY_WORKBOOK=/path/to/official-supply.xlsx` 可用留档原表和供应清单一起核对组成、标识和公开版本。冲突和官方更正场景使用隔离测试库中的演练副本。
 
 ## 数据库分权
 

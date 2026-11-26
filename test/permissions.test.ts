@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
+import { extractCandidate, parseImportManifest } from "../src/price-import.ts";
 import { testDatabase } from "./postgres.ts";
 
 const insufficientPrivilege = { code: "42501" };
@@ -62,22 +63,32 @@ test("升级 #2 已发布数据后，应用角色仍以原 price_id 读取完整
   const application = await login();
   await owner.query(`GRANT UPDATE (amount), DELETE ON public.price_record TO ${application.name}`);
   const expected = JSON.parse(await readFile("samples/hunan-joint-results.published.json", "utf8"));
-  const { price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, source } = expected;
+  const manifest = JSON.parse(await readFile("samples/hunan-joint-results.json", "utf8"));
+  const workbook = await readFile("samples/hunan-joint-results.xls");
+  const candidateAt = (row_number: number) => extractCandidate(parseImportManifest({ ...manifest, row_number }), workbook);
+  const missingRows = { ...candidateAt(6), original_rows: [] };
+  const mismatchedSource = candidateAt(17);
+  const { price_id } = expected;
   const publishedAt = "2026-11-26T10:00:00.000Z";
-  await owner.query(`
-    INSERT INTO public.import_candidate
-      (price_id, amount, product_system, applicant, region, effective_from, service_fee_basis,
-       source, original_rows, reviewed_at, reviewed_by)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, '[]', $9, 'legacy-reviewer')
-  `, [price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, source, publishedAt]);
-  await owner.query(`
-    INSERT INTO public.price_record
-      (price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, source,
-       published_at, published_by)
-    SELECT price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, source,
-           reviewed_at, reviewed_by
-    FROM public.import_candidate
-  `);
+  for (const candidate of [candidateAt(5), missingRows, mismatchedSource]) {
+    const { price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, source, original_rows } = candidate;
+    await owner.query(`
+      INSERT INTO public.import_candidate
+        (price_id, amount, product_system, applicant, region, effective_from, service_fee_basis,
+         source, original_rows, reviewed_at, reviewed_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'legacy-reviewer')
+    `, [price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, source,
+      JSON.stringify(original_rows), publishedAt]);
+    const publishedSource = candidate === mismatchedSource ? missingRows.source : source;
+    await owner.query(`
+      INSERT INTO public.price_record
+        (price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, source,
+         published_at, published_by)
+      SELECT price_id, amount, product_system, applicant, region, effective_from, service_fee_basis, $2,
+             reviewed_at, reviewed_by
+      FROM public.import_candidate WHERE price_id = $1
+    `, [price_id, publishedSource]);
+  }
 
   await Promise.all([migrate(), migrate()]);
   assert.deepEqual((await owner.query(
@@ -86,9 +97,11 @@ test("升级 #2 已发布数据后，应用角色仍以原 price_id 读取完整
   await owner.query(`GRANT orth_application TO ${application.name}`);
   const { rows } = await application.pool.query("SELECT * FROM orth_catalog.price_v1 WHERE price_id = $1", [price_id]);
   assert.deepEqual(rows, [{ ...expected, published_at: publishedAt }]);
-  assert.deepEqual((await application.pool.query(
+  const groups = (await application.pool.query<{ price_id: string; published_group: string | null }>(
     "SELECT price_id, published_group FROM orth_catalog.price_search_v1"
-  )).rows, [{ price_id, published_group: "A" }]);
+  )).rows;
+  assert.deepEqual(new Map(groups.map((row) => [row.price_id, row.published_group])),
+    new Map([[price_id, "A"], [missingRows.price_id, null], [mismatchedSource.price_id, null]]));
   await assert.rejects(application.pool.query("UPDATE orth_catalog.price_record SET amount = 1"), insufficientPrivilege);
   await assert.rejects(application.pool.query("DELETE FROM orth_catalog.price_record"), insufficientPrivilege);
 });

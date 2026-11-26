@@ -1,4 +1,4 @@
-/** @typedef {import("../../../contracts/price-v1").PublicPrice} PublicPrice */
+/** @typedef {import("../../../contracts/price-v1").PublicPriceWithCorrection} PublicPriceWithCorrection */
 /** @typedef {import("../../../contracts/price-v1").PriceSearchResponse} PriceSearchResponse */
 /** @typedef {PriceSearchResponse["prices"][number]} PriceSearchResult */
 /** @typedef {keyof PriceSearchResponse["filters"]} TagKey */
@@ -41,7 +41,7 @@ function detailPath(priceId) {
 Page({
   data: {
     showDetail: false,
-    price: /** @type {PublicPrice | null} */ (null),
+    price: /** @type {PublicPriceWithCorrection | null} */ (null),
     enteredViaDetail: false,
     keyword: "",
     pickers: searchPickers(),
@@ -151,9 +151,9 @@ Page({
   loadPrice(priceId) {
     this.setData({ showDetail: true, price: null, error: "", loading: true });
     const { apiBaseUrl } = getApp().globalData;
-    /** @type {WechatMiniprogram.RequestOption<PublicPrice>} */
+    /** @type {WechatMiniprogram.RequestOption<PublicPriceWithCorrection>} */
     const request = {
-      url: `${apiBaseUrl}/api/v1/prices/${encodeURIComponent(priceId)}`,
+      url: `${apiBaseUrl}/api/v1/prices/${encodeURIComponent(priceId)}?include_correction=1`,
       timeout: 10000,
       success: ({ data, statusCode }) => {
         if (statusCode === 200) {
@@ -174,7 +174,7 @@ Page({
     const { price } = this.data;
     if (!price) return { title: "骨科集采公开价格查询", path: pagePath };
     return {
-      title: `${price.product_system} · ${price.amount} ${price.unit}`,
+      title: `${price.superseded_by_price_id ? "已被官方更正 · " : ""}${price.product_system} · ${price.amount} ${price.unit}`,
       path: detailPath(price.price_id)
     };
   },

@@ -104,7 +104,7 @@ export async function checkMiniPricePage(base: string, priceId: string) {
     assert.deepEqual(copied, [noticeUrl, attachmentUrl]);
 
     const missing = await open(`/${route}?price_id=missing-contract-id`);
-    assert.equal(requested(), `${base}/api/v1/prices/missing-contract-id`);
+    assert.equal(requested(), `${base}/api/v1/prices/missing-contract-id?include_correction=1`);
     assert.match(missing.view.dom?.textContent ?? "", /暂无这条已发布价格/);
     assert.equal(missing.view.querySelector("#copy-notice"), undefined);
   });
@@ -166,7 +166,7 @@ export async function checkMiniPriceSearch(base: string, priceId: string) {
     assert.equal(sharePath, `/${route}?price_id=${priceId}`);
 
     const recipient = await open(sharePath);
-    assert.equal(requested(), `${base}/api/v1/prices/${priceId}`);
+    assert.equal(requested(), `${base}/api/v1/prices/${priceId}?include_correction=1`);
     const recipientText = recipient.view.dom?.textContent ?? "";
     assert.ok(recipientText.includes(priceId));
     assert.match(recipientText, /5896\.00 元\/套/);
@@ -203,6 +203,34 @@ export async function checkMiniPriceSearch(base: string, priceId: string) {
       assert.equal(navigation(), sharePath);
       assert.equal(redirected(), true, "连续查看详情时应复用当前详情页栈位置");
     }
+  });
+}
+
+export async function checkMiniCorrection(base: string, originalId: string, correctedId: string) {
+  await withMiniPreview(base, async ({ open, settle, navigation }) => {
+    const results = await open("/" + route);
+    const card = (id: string) => results.view.querySelector("#result-" + id)?.dom?.parentElement?.textContent ?? "";
+    assert.match(card(originalId), /已被官方更正.*5896\.00 元\/套/s);
+    assert.match(card(correctedId), /官方更正后的价格.*5901\.00 元\/套/s);
+
+    const originalPath = `/${route}?price_id=${originalId}`;
+    const correctedPath = `/${route}?price_id=${correctedId}`;
+    const original = await open(originalPath);
+    assert.equal(original.share(), originalPath, "旧分享继续指向同一价格");
+    assert.match(original.view.dom?.textContent ?? "", /已被官方更正.*5896\.00 元\/套/s);
+    const successor = original.view.querySelector("#view-corrected-price");
+    assert.ok(successor);
+    successor.dispatchEvent("tap");
+    await settle();
+    assert.equal(navigation(), correctedPath);
+
+    const corrected = await open(correctedPath);
+    assert.match(corrected.view.dom?.textContent ?? "", /官方更正后的价格.*5901\.00 元\/套/s);
+    const previous = corrected.view.querySelector("#view-previous-price");
+    assert.ok(previous);
+    previous.dispatchEvent("tap");
+    await settle();
+    assert.equal(navigation(), originalPath);
   });
 }
 

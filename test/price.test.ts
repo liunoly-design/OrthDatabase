@@ -141,8 +141,9 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
     for (const q of ["合金-聚乙烯类髋关节产品系统", "合金对聚乙烯髋关节", "天津正天"]) {
       const { prices } = await search({ q });
       assert.equal(prices.length, 1, q);
-      const { published_group, ...result } = prices[0];
+      const { published_group, superseded_by_price_id, ...result } = prices[0];
       assert.equal(published_group, "A");
+      assert.equal(superseded_by_price_id, null);
       assert.deepEqual(result, { ...expected, published_at });
     }
     assert.deepEqual((await search({ q: "%" })).prices, []);
