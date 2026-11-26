@@ -15,7 +15,7 @@
 | `orth_governance` | 读取官方信源、采集任务和候选，记录复核结果，读取正式区的 `price_id` 来显示发布状态。兼容手工导入入口沿用此登录，进入与 Worker 相同的采集流程。 |
 | `orth_worker` | 登记官方信源和采集任务，读写导入所需候选字段。 |
 | `orth_publisher` | 调用 `orth_catalog.publish_price`，在单次事务内将已复核候选写入正式区。 |
-| `orth_application` | 只读 `orth_catalog.price_v1`，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
+| `orth_application` | 只读 `orth_catalog.price_v1` 和 `orth_catalog.price_search_v1`，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
 
 ## 本地复现
 
@@ -73,7 +73,7 @@ npm run start:worker -- samples/hunan-joint-results.json
 
 ### 数据应用系统
 
-应用服务同时提供访客 Web 和查询 API，使用自己的数据库登录。该登录在 `orth_app` 维护应用数据，从 `orth_catalog.price_v1` 读取已发布价格。应用默认监听 `127.0.0.1:3000`，治理 API 和采集 Worker 暂停时仍可查到最后一次发布的价格。
+应用服务同时提供访客 Web 和查询 API，使用自己的数据库登录。该登录在 `orth_app` 维护应用数据，从 `orth_catalog.price_v1` 和 `orth_catalog.price_search_v1` 读取已发布价格。应用默认监听 `127.0.0.1:3000`，治理 API 和采集 Worker 暂停时仍可查到最后一次发布的价格。
 
 ```sh
 ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@localhost/orthdatabase' npm run start:application
@@ -91,7 +91,7 @@ curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 
 - Web 打开 `http://127.0.0.1:3000/` 输入价格编码，或直接打开 `http://127.0.0.1:3000/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情提供湖南执行公告、官方原表和原表价格格。
 - 微信开发者工具导入仓库根目录。启动页可输入价格编码，或用自定义编译条件打开 `pages/price/index?price_id=aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情可分享同一价格编码，查看 `Sheet1 · 第 5 行 · G5` 并复制两个官方链接。
-- 小程序游客配置默认连接 `http://127.0.0.1:3000`。接入真机或发布时，在 `miniprogram/app.js` 配置应用服务的 HTTPS 地址，并设置小程序请求合法域名。Web 和小程序共用 `GET /api/v1/prices/{price_id}`。
+- 小程序游客配置默认连接 `http://127.0.0.1:3000`。接入真机或发布时，在 `miniprogram/app.js` 配置应用服务的 HTTPS 地址，并设置小程序请求合法域名。小程序用 `GET /api/v1/prices` 按关键词与标签查价，Web 和小程序共用 `GET /api/v1/prices/{price_id}` 免登录打开详情。小程序分享路径为 `/pages/price/index?price_id={price_id}`。
 
 ## 构建与部署
 
@@ -116,4 +116,6 @@ npm test
 npm run typecheck
 ```
 
-请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。测试独立启动应用进程，并在关闭治理服务后通过应用 API 复验最后一次发布。Web 测试提交实际页面表单、执行浏览器脚本并检查官方链接。小程序模拟测试加载实际页面脚本与 WXML，经同一 API 验证分享路径和两个出处按钮。
+请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。测试独立启动应用进程，并在关闭治理服务后通过应用 API 复验最后一次发布。Web 测试提交实际页面表单、执行浏览器脚本并检查官方链接。小程序模拟测试加载实际页面脚本与 WXML，通过独立应用 API 查询湖南正式中选附件的 G5、G6、G17 三条记录。测试在模拟的接收方新页面打开分享回调生成的路径，核对同一编码、出处按钮和继续查询。
+
+湖南附件只公布产品系统类别，包装内数量未核实。真实样本验收覆盖同产品系统类别、地区、轮次、分组及未核实包装。测试另在临时数据库的发布契约视图加载测试数据，验证精确品规、已知包装数量和不同计价单位的查询与展示。

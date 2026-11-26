@@ -21,3 +21,16 @@ page {
 .error { color: #9e3025; }
 input { border-bottom: 1px solid #829c96; min-height: 76rpx; }
 button { margin: 18rpx 0 0; background: #e2f2ee; color: #07584e; }
+
+.context, .location { font-size: 26rpx; overflow-wrap: anywhere; }
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 24rpx;
+}
+.filter { background: #f3f7f6; border-radius: 12rpx; overflow-wrap: anywhere; padding: 12rpx 16rpx; }
+.scope { color: #07584e; margin-top: 18rpx; overflow-wrap: anywhere; }
+.search-button { background: #07584e; color: #fff; }
+.actions { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.actions button { margin: 0; }

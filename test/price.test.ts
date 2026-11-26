@@ -7,8 +7,9 @@ import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { test } from "node:test";
 import { promisify } from "node:util";
+import type { PriceSearchResponse } from "../contracts/price-v1.d.ts";
 import { createApp } from "../src/app.ts";
-import { checkMiniPricePage } from "./mini-preview.ts";
+import { checkMiniPricePage, checkMiniPriceSearch, checkMiniSpecFollowup } from "./mini-preview.ts";
 import { testDatabase } from "./postgres.ts";
 import { checkWebPricePage } from "./web-price-preview.ts";
 
@@ -88,12 +89,17 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
   });
 
   const price = () => fetch(`${applicationBase}/api/v1/prices/${price_id}`);
+  const search = async (filters: Record<string, string>): Promise<PriceSearchResponse> => {
+    const response = await fetch(`${applicationBase}/api/v1/prices?${new URLSearchParams(filters)}`);
+    assert.equal(response.status, 200);
+    return response.json();
+  };
   const readPublishedPrice = () => application.pool.query(
     "SELECT * FROM orth_catalog.price_v1 WHERE price_id = $1", [price_id]
   );
   const operator = `${base}/ops/candidates/${price_id}`;
   const authorization = "Basic " + Buffer.from("reviewer:test-secret").toString("base64");
-  const action = (name: string) => fetch(`${operator}/${name}`, {
+  const action = (name: string, id = price_id) => fetch(`${base}/ops/candidates/${id}/${name}`, {
     method: "POST", headers: { authorization, "content-type": "application/json" }, body: "{}"
   });
 
@@ -101,6 +107,7 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
   assert.equal(beforePublication.status, 404);
   assert.deepEqual(await beforePublication.json(), { error: "price_not_found" });
   assert.equal((await readPublishedPrice()).rowCount, 0);
+  assert.deepEqual((await search({ q: "天津正天" })).prices, []);
   assert.equal((await fetch(operator)).status, 401);
   const queue = await fetch(`${base}/ops`, { headers: { authorization } });
   assert.equal(queue.status, 200);
@@ -119,6 +126,7 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
   assert.equal((await action("publish")).status, 409);
   assert.equal((await action("review")).status, 204);
   assert.equal((await price()).status, 404);
+  assert.deepEqual((await search({ q: "天津正天" })).prices, []);
   const attempts = await Promise.all([action("publish"), action("publish")]);
   assert.deepEqual(attempts.map(({ status }) => status), [204, 204]);
   const published = await price();
@@ -128,6 +136,66 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
   assert.deepEqual(snapshot, expected);
   const { rows } = await readPublishedPrice();
   assert.deepEqual(rows, [{ ...expected, published_at }]);
+
+  await t.test("访客按产品名、别名和企业名查询，同一套价和官方证据符合发布契约", async () => {
+    for (const q of ["合金-聚乙烯类髋关节产品系统", "合金对聚乙烯髋关节", "天津正天"]) {
+      const { prices } = await search({ q });
+      assert.equal(prices.length, 1, q);
+      const { published_group, ...result } = prices[0];
+      assert.equal(published_group, "A");
+      assert.deepEqual(result, { ...expected, published_at });
+    }
+    assert.deepEqual((await search({ q: "%" })).prices, []);
+  });
+
+  await t.test("同一真实原表的已公布分组可组合筛选，未发布行不会出现在结果或选项中", async () => {
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+    const importRow = async (row_number: number) => {
+      const path = join(dataDir, `row-${row_number}.json`);
+      await writeFile(path, JSON.stringify({ ...manifest, row_number }));
+      const { stdout } = await importSample(path);
+      return JSON.parse(stdout).price_id as string;
+    };
+    const second = await importRow(6);
+    const groupB = await importRow(17);
+    assert.equal((await action("review", second)).status, 204);
+    assert.equal((await action("publish", second)).status, 204);
+    const tags = {
+      q: "合金对聚乙烯髋关节", round_id: "GH-HD2024-1", published_group: "A",
+      price_type: "正式中选价", pack_quantity: "unknown", unit: "元/套"
+    };
+    const { prices, filters } = await search(tags);
+    assert.deepEqual(filters, {
+      round_id: ["GH-HD2024-1"], published_group: ["A"], price_type: ["正式中选价"],
+      pack_quantity: [null], unit: ["元/套"]
+    });
+    assert.deepEqual(prices.map(({ applicant, amount, published_group, source }) =>
+      [applicant, amount, published_group, source.price_cell]).sort(), [
+      ["天津正天医疗器械有限公司", "5896.00", "A", "G5"],
+      ["嘉思特医疗器材（天津）股份有限公司", "5907.00", "A", "G6"]
+    ].sort());
+    assert.deepEqual(prices.map(({ price_id }) => price_id).sort(), [price_id, second].sort());
+    for (const mismatched of [
+      { round_id: "另一个轮次" }, { published_group: "B" }, { price_type: "挂网价" },
+      { pack_quantity: "1" }, { unit: "元/件" }
+    ]) {
+      assert.deepEqual((await search({ ...tags, ...mismatched })).prices, []);
+    }
+    assert.equal((await action("review", groupB)).status, 204);
+    assert.equal((await fetch(`${applicationBase}/api/v1/prices/${groupB}`)).status, 404);
+    assert.deepEqual((await search({ published_group: "B" })).filters.published_group, ["A"]);
+    assert.equal((await action("publish", groupB)).status, 204);
+    const updated = await search({ ...tags, published_group: "B" });
+    assert.deepEqual(updated.filters.published_group, ["A", "B"]);
+    assert.deepEqual(updated.prices.map(({ price_id, amount }) => [price_id, amount]), [[groupB, "5610.00"]]);
+    assert.deepEqual((await search({ product_spec_id: "unknown-spec" })).prices, []);
+    const scopes: Record<string, string>[] = [
+      { product_system: expected.product_system }, { region: "湖南省" }, { round_id: "GH-HD2024-1" }
+    ];
+    for (const scope of scopes) {
+      assert.equal((await search(scope)).prices.length, 3);
+    }
+  });
 
   await t.test("重复导入复用 price_id，已发布记录保持可查", async () => {
     const { stdout } = await importSample();
@@ -148,4 +216,33 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
 
   await t.test("治理服务停止后，访客可在 Web 查价并打开公告与原表", () =>
     checkWebPricePage(applicationBase, expected));
+
+  await t.test("小程序访客查价、筛选并在独立页面打开实际分享路径，再继续查", () =>
+    checkMiniPriceSearch(applicationBase, price_id));
+
+  await t.test("契约测试数据覆盖已知包装、不同价格口径及分享后的精确品规", async () => {
+    // The official workbook publishes kit categories. Exercise additional documented v1 values
+    // at the published-data boundary, only after the real publication checks have completed.
+    const specId = "fixture-spec-01";
+    await database.owner.query(`
+      CREATE TABLE orth_catalog.test_contract_prices AS TABLE orth_catalog.price_v1;
+      CREATE OR REPLACE VIEW orth_catalog.price_v1 AS TABLE orth_catalog.test_contract_prices;
+    `);
+    await database.owner.query(`
+      UPDATE orth_catalog.test_contract_prices
+      SET subject_kind = 'product_spec', product_spec_id = $2, price_type = '挂网价',
+          unit = '元/件', pack_quantity = 4, region = '契约测试地区'
+      WHERE price_id = $1
+    `, [price_id, specId]);
+
+    const { prices, filters } = await search({ price_type: "挂网价", pack_quantity: "4", unit: "元/件" });
+    assert.deepEqual(filters.pack_quantity, [4, null]);
+    assert.deepEqual(prices.map((item) => [
+      item.price_id, item.product_spec_id, item.price_type, item.pack_quantity, item.unit
+    ]), [[price_id, specId, "挂网价", 4, "元/件"]]);
+    assert.deepEqual((await search({ product_spec_id: specId, region: "契约测试地区" }))
+      .prices.map((item) => item.price_id), [price_id]);
+    assert.equal((await search({ product_system: expected.product_system })).prices.length, 2);
+    await checkMiniSpecFollowup(applicationBase, price_id, specId);
+  });
 });
