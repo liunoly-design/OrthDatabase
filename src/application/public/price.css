@@ -1,0 +1,44 @@
+:root {
+  color-scheme: light;
+  background: #f3f7f5;
+  color: #142e2a;
+  font: 100%/1.6 system-ui, sans-serif;
+}
+
+body { margin: 0; }
+.site-header { padding: .9rem max(1.25rem, calc((100% - 46rem) / 2)); background: #103a33; }
+.site-header a { color: #fff; font-weight: 650; text-decoration: none; }
+.site-header span { color: #cbdfd7; font-weight: 400; }
+main { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+h1 { margin: 0 0 1.1rem; font-size: clamp(1.5rem, 4vw, 2rem); }
+h2 { margin: 0; font-size: 1.15rem; }
+p { margin: .4rem 0 0; }
+a { color: #07584e; text-underline-offset: .2em; }
+label { display: block; margin-bottom: .35rem; font-weight: 600; }
+
+.search-controls { display: flex; gap: .5rem; }
+input, button { box-sizing: border-box; border-radius: .45rem; padding: .65rem .8rem; font: inherit; }
+input { flex: 1; min-width: 0; border: 1px solid #698a82; color: inherit; }
+button { border: 1px solid #0a5247; background: #0a5247; color: #fff; cursor: pointer; }
+button:hover { background: #083e36; }
+:focus-visible { outline: 2px solid #17806e; outline-offset: 3px; }
+
+#status { margin-top: 1rem; }
+#status:empty { margin: 0; }
+article { margin-top: 1.25rem; }
+.card {
+  margin-bottom: .8rem;
+  border: 1px solid #cfdfd8;
+  border-radius: .75rem;
+  padding: clamp(1rem, 5vw, 1.6rem);
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+
+.price-type, dt, #publisher, .location { color: #4a655f; }
+.price-type { margin-top: 0; }
+.amount { margin: .1rem 0 .65rem; color: #07584e; font-size: clamp(1.7rem, 7vw, 2.5rem); font-weight: 700; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: .35rem .8rem; margin: 1rem 0 0; }
+dd { margin: 0; }
+.source { margin-top: .75rem; }
+.location { font-size: .9rem; }

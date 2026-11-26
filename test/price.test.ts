@@ -1,18 +1,34 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createInterface } from "node:readline";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import { createApp } from "../src/app.ts";
 import { checkMiniPricePage } from "./mini-preview.ts";
 import { testDatabase } from "./postgres.ts";
+import { checkWebPricePage } from "./web-price-preview.ts";
 
 const exec = promisify(execFile);
 
+function startApplication(databaseUrl: string) {
+  return spawn(process.execPath, ["src/application/start.ts"], {
+    env: { ORTH_APPLICATION_DATABASE_URL: databaseUrl, PORT: "0" },
+    stdio: ["ignore", "pipe", "inherit"]
+  });
+}
+
 test("复核湖南正式中选原表并发布后，才可用 price_id 查到套价与证据", async (t) => {
+  let applicationProcess: ReturnType<typeof startApplication> | undefined;
+  t.after(async () => {
+    if (!applicationProcess || applicationProcess.exitCode !== null || applicationProcess.signalCode !== null) return;
+    const exited = once(applicationProcess, "exit");
+    applicationProcess.kill();
+    await exited;
+  });
   const database = await testDatabase(t);
   const dataDir = await mkdtemp(join(tmpdir(), "orth-test-"));
   t.after(() => rm(dataDir, { recursive: true, force: true }));
@@ -20,6 +36,17 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
   const application = await database.login("orth_application");
   const governance = await database.login("orth_governance");
   const publisher = await database.login("orth_publisher");
+  applicationProcess = startApplication(application.url);
+  const output = createInterface({ input: applicationProcess.stdout });
+  let applicationBase: string;
+  try {
+    const [line] = await once(output, "line", { signal: AbortSignal.timeout(5_000) });
+    const address = String(line).match(/http:\/\/127\.0\.0\.1:[1-9]\d*/);
+    assert.ok(address, "应用进程应报告实际监听地址");
+    applicationBase = address[0];
+  } finally {
+    output.close();
+  }
   const manifestPath = "samples/hunan-joint-results.json";
   const importSample = (manifest = manifestPath) => exec(process.execPath, [
     "src/import-price.ts", manifest, "samples/hunan-joint-results.xls"
@@ -33,7 +60,9 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
       operator: { user: "reviewer", password: "test-secret" }
     }
   }).listen(0, "127.0.0.1");
-  t.after(() => new Promise<void>((resolve) => server.close(() => resolve())));
+  t.after(() => {
+    if (server.listening) return new Promise<void>((resolve) => server.close(() => resolve()));
+  });
   await once(server, "listening");
   const address = server.address();
   assert.ok(address && typeof address === "object");
@@ -58,7 +87,7 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
     ]);
   });
 
-  const price = () => fetch(`${base}/api/v1/prices/${price_id}`);
+  const price = () => fetch(`${applicationBase}/api/v1/prices/${price_id}`);
   const readPublishedPrice = () => application.pool.query(
     "SELECT * FROM orth_catalog.price_v1 WHERE price_id = $1", [price_id]
   );
@@ -99,7 +128,6 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
   assert.deepEqual(snapshot, expected);
   const { rows } = await readPublishedPrice();
   assert.deepEqual(rows, [{ ...expected, published_at }]);
-  await t.test("小程序页面按 price_id 打开并定位官方公告与原表", () => checkMiniPricePage(base, price_id));
 
   await t.test("重复导入复用 price_id，已发布记录保持可查", async () => {
     const { stdout } = await importSample();
@@ -108,4 +136,16 @@ test("复核湖南正式中选原表并发布后，才可用 price_id 查到套�
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { ...expected, published_at });
   });
+
+  await t.test("治理服务停止后，独立应用 API 与小程序仍可打开最后发布的价格", async () => {
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    const response = await price();
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { ...expected, published_at });
+    assert.equal((await fetch(`${applicationBase}/ops`)).status, 404);
+    await checkMiniPricePage(applicationBase, price_id);
+  });
+
+  await t.test("治理服务停止后，访客可在 Web 查价并打开公告与原表", () =>
+    checkWebPricePage(applicationBase, expected));
 });

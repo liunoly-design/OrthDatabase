@@ -16,6 +16,7 @@
         {{price.region}}<block wx:if="{{price.effective_from}}">自 {{price.effective_from}} 执行</block>
         <block wx:else> · 起始日期未确认</block> · {{price.service_fee_basis}}
       </view>
+      <button id="share-price" open-type="share" size="mini">分享这条价格</button>
     </view>
 
     <view class="card">

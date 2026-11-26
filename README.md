@@ -1,6 +1,6 @@
 # 骨科集采查价
 
-从官方原始工作簿导入产品系统中选价，在 Web 后台对照原表、确认复核并发布，然后通过公开 API 和微信小程序查价。两套系统共用 [价格发布契约 v1](contracts/price-v1.md) 和 PostgreSQL，使用独立的运行登录。
+从官方原始工作簿导入产品系统中选价，在 Web 后台对照原表、确认复核并发布，然后通过用户 Web 和微信小程序共用的公开 API 查价。两套系统共用 [价格发布契约 v1](contracts/price-v1.md) 和 PostgreSQL，使用独立的运行登录。
 
 ## 真实样本
 
@@ -59,9 +59,20 @@ npm start
 curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 ```
 
-仅运行公开查询 API 可执行 `npm start -- app`。该模式只需要 `ORTH_APPLICATION_DATABASE_URL`。
+## 独立运行数据应用系统
 
-在微信开发者工具导入仓库根目录。启动页支持输入价格编码，也可用自定义编译条件打开 `pages/price/index?price_id=aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情显示计价单位和 `Sheet1 · 第 5 行 · G5`，并可复制官方公告链接和原表下载链接。仓库中的游客配置连接本地 API。接入真机或发布时，在 `miniprogram/app.js` 配置实际 HTTPS API 地址并设置小程序请求合法域名。
+应用服务同时提供访客 Web 和查询 API。部署时用已迁移库中的应用登录连接 PostgreSQL。账号等应用数据由应用登录在 `orth_app` 维护，价格查询读取 `orth_catalog.price_v1`。
+
+```sh
+export ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@localhost/orthdatabase'
+HOST=127.0.0.1 PORT=3001 npm run start:application
+```
+
+`HOST` 默认是 `127.0.0.1`，`PORT` 默认是 `3000`。在同一主机同时启动运营服务时为应用选择独立端口。应用入口只需应用登录和 PostgreSQL，治理 API 和采集 Worker 暂停期间仍可读取已发布价格。
+
+- Web 打开 `http://127.0.0.1:3001/` 输入价格编码，或直接打开 `http://127.0.0.1:3001/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情提供可点击的湖南执行公告、官方原表和原表价格格。
+- 微信开发者工具导入仓库根目录。启动页可输入价格编码，或用自定义编译条件打开 `pages/price/index?price_id=aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情可分享同一价格编码，查看 `Sheet1 · 第 5 行 · G5` 并复制两个官方链接。
+- 小程序游客配置默认连接 `http://127.0.0.1:3000`。按上例使用 `3001` 时，在 `miniprogram/app.js` 将 API 地址改为 `http://127.0.0.1:3001`。接入真机或发布时，在该文件配置应用服务的 HTTPS 地址，并设置小程序请求合法域名。Web 和小程序均通过 `GET /api/v1/prices/{price_id}` 查价。
 
 ## 验证
 
@@ -70,4 +81,4 @@ TEST_DATABASE_URL='postgresql://localhost/postgres' npm test
 npm run typecheck
 ```
 
-请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。小程序模拟测试加载实际页面脚本与 WXML，通过同一查询 API 取价并验证两个出处按钮。
+请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。测试独立启动应用进程，并在关闭治理服务后通过应用 API 复验最后一次发布。Web 测试提交实际页面表单、执行浏览器脚本并检查官方链接。小程序模拟测试加载实际页面脚本与 WXML，经同一 API 验证分享路径和两个出处按钮。

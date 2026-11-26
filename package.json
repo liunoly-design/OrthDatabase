@@ -10,6 +10,7 @@
     "migrate": "node src/migrate.ts",
     "import:price": "node src/import-price.ts",
     "start": "node src/start.ts",
+    "start:application": "node src/application/start.ts",
     "test": "node --test test/*.test.ts",
     "typecheck": "tsc -p tsconfig.json && tsc -p miniprogram/tsconfig.json"
   },

@@ -57,13 +57,6 @@ export async function addCandidate(pool: Pool, candidate: Candidate) {
   if (!existing.rowCount) throw new Error("已存在同一来源与位置的候选，但导入内容有冲突");
 }
 
-export async function getPublicPrice(pool: Pool, priceId: string) {
-  const { rows } = await pool.query<PublicPrice>(`
-    SELECT * FROM orth_catalog.price_v1 WHERE price_id = $1
-  `, [priceId]);
-  return rows[0];
-}
-
 export async function listCandidates(pool: Pool) {
   const { rows } = await pool.query<CandidateSummary>(`
     SELECT c.price_id, c.product_system, c.applicant, ${statusColumn}
