@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { runInNewContext } from "node:vm";
 import { JSDOM } from "jsdom";
-import type { PublicPrice } from "../miniprogram/pages/price/contract.d.ts";
+import type { PublicPrice } from "../contracts/price-v1.d.ts";
 
 interface PricePage {
   data: { price: PublicPrice | null; error: string; loading: boolean; priceId: string };

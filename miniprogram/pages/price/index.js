@@ -1,4 +1,4 @@
-/** @typedef {import("./contract").PublicPrice} PublicPrice */
+/** @typedef {import("../../../contracts/price-v1").PublicPrice} PublicPrice */
 
 Page({
   data: {

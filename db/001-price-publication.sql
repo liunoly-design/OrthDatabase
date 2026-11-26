@@ -1,6 +1,4 @@
-BEGIN;
-
-CREATE TABLE IF NOT EXISTS import_candidate (
+CREATE TABLE IF NOT EXISTS public.import_candidate (
     price_id text PRIMARY KEY CHECK (price_id ~ '^aj_[a-f0-9]{32}$'),
     amount numeric(12, 2) NOT NULL CHECK (amount > 0),
     product_system text NOT NULL,
@@ -16,8 +14,8 @@ CREATE TABLE IF NOT EXISTS import_candidate (
     CHECK ((reviewed_at IS NULL) = (reviewed_by IS NULL))
 );
 
-CREATE TABLE IF NOT EXISTS price_record (
-    price_id text PRIMARY KEY REFERENCES import_candidate (price_id),
+CREATE TABLE IF NOT EXISTS public.price_record (
+    price_id text PRIMARY KEY REFERENCES public.import_candidate (price_id),
     amount numeric(12, 2) NOT NULL CHECK (amount > 0),
     product_system text NOT NULL,
     applicant text NOT NULL,
@@ -28,5 +26,3 @@ CREATE TABLE IF NOT EXISTS price_record (
     published_at timestamptz NOT NULL DEFAULT now(),
     published_by text NOT NULL
 );
-
-COMMIT;

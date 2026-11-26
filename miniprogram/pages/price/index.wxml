@@ -12,7 +12,10 @@
       <view class="amount">{{price.amount}} {{price.unit}}</view>
       <view class="title">{{price.product_system}}</view>
       <view>{{price.applicant}}</view>
-      <view class="context">{{price.region}}自 {{price.effective_from}} 执行 · {{price.service_fee_basis}}</view>
+      <view class="context">
+        {{price.region}}<block wx:if="{{price.effective_from}}">自 {{price.effective_from}} 执行</block>
+        <block wx:else> · 起始日期未确认</block> · {{price.service_fee_basis}}
+      </view>
     </view>
 
     <view class="card">

@@ -1,23 +1,50 @@
 # 骨科集采查价
 
-[Issue #2](https://github.com/liunoly-design/OrthDatabase/issues/2) 的可运行切片。从官方原始工作簿导入一个产品系统的正式中选价，在 Web 后台对照原表、确认复核并发布，然后通过公开 API 和微信小程序查价。
+从官方原始工作簿导入产品系统中选价，在 Web 后台对照原表、确认复核并发布，然后通过公开 API 和微信小程序查价。两套系统共用 [价格发布契约 v1](contracts/price-v1.md) 和 PostgreSQL，使用独立的运行登录。
 
 ## 真实样本
 
 原表是湖南省医疗保障局发布的湘医保函〔2024〕48 号附件 1。工作簿标题为《国家组织人工关节集中带量采购协议期满接续中选结果》。`Sheet1` 第 5 行为天津正天医疗器械有限公司，合金-聚乙烯类髋关节产品系统，价格格 `G5` 为 5896。按采购文件 GH-HD2024-1 正文第 24–25 页的产品系统报价规则记录为 **5896.00 元/套**。湖南执行通知明确自 2024-10-15 执行并包含伴随服务费。 [湖南执行通知](https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/t20240919_33458275.html) · [官方原表](https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/33458275/files/0ac80457057341528553dae98aee88b0.xls) · [采购文件](https://ylbzj.qdn.gov.cn/xwzx_500425/tzgg_5823021/202405/P020240501382474157441.pdf)
 
-`samples/hunan-joint-results.xls` 是原表字节快照，SHA-256 记录在同目录清单中。导入器从原表读取所选行的金额、产品系统和申报企业，从清单读取官方链接、地区与执行口径。工作簿按哈希留档，候选与发布状态存在 PostgreSQL。样本适配本附件的产品系统中选价表头。
+`samples/hunan-joint-results.xls` 是原表字节快照，SHA-256 记录在同目录清单中。导入器从原表读取所选行的金额、产品系统和申报企业，从清单读取官方链接、地区与执行口径。工作簿按哈希留档，候选与发布状态存在 PostgreSQL。[发布快照](samples/hunan-joint-results.published.json) 提供双方可复用的期望响应值。
+
+## 数据库分权
+
+| PostgreSQL 运行角色 | 授权 |
+| --- | --- |
+| `orth_governance` | 读写 `orth_governance.import_candidate` 的导入与复核所需字段，读取正式区的 `price_id` 来显示发布状态。 |
+| `orth_publisher` | 调用 `orth_catalog.publish_price`，在单次事务内将已复核候选写入正式区。 |
+| `orth_application` | 只读 `orth_catalog.price_v1`，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
 
 ## 本地复现
 
-需要 Node.js 24 和 PostgreSQL。在空的开发库中运行以下命令，按本地配置设置数据库连接和复核人员账号。
+需要 Node.js 24 和 PostgreSQL。用迁移账号连接开发库，在初始化时创建三个权限组。迁移账号需要建 schema 和角色的权限。升级 Issue #2 的库时，迁移账号还需要拥有原 `public` 模式下的两张表。迁移保留已有候选和已发布记录，用新角色授权替换旧表授权。已有执行日期超出公元 0001 至 9999 年时，迁移会报错并回滚。
 
 ```sh
 npm ci
 export DATABASE_URL='postgresql://localhost/orthdatabase'
+npm run migrate
+```
+
+上例使用 PostgreSQL 本地默认登录，按实际迁移账号填写 `DATABASE_URL`。再在 `psql` 中用有角色管理权限的账号配置三个独立登录。开发库如有单独的连接权限策略，同时为三个登录授予该库的 `CONNECT`。
+
+```sql
+CREATE ROLE orth_governance_login LOGIN IN ROLE orth_governance;
+CREATE ROLE orth_publisher_login LOGIN IN ROLE orth_publisher;
+CREATE ROLE orth_application_login LOGIN IN ROLE orth_application;
+\password orth_governance_login
+\password orth_publisher_login
+\password orth_application_login
+```
+
+设置运行账号连接串和后台复核账号。URL 中的密码按 URL 规则编码。
+
+```sh
+export ORTH_GOVERNANCE_DATABASE_URL='postgresql://orth_governance_login:PASSWORD@localhost/orthdatabase'
+export ORTH_PUBLISHER_DATABASE_URL='postgresql://orth_publisher_login:PASSWORD@localhost/orthdatabase'
+export ORTH_APPLICATION_DATABASE_URL='postgresql://orth_application_login:PASSWORD@localhost/orthdatabase'
 export ORTH_OPERATOR_USER='reviewer'
 export ORTH_OPERATOR_PASSWORD='填写本地密码'
-npm run migrate
 npm run import:price -- samples/hunan-joint-results.json samples/hunan-joint-results.xls
 npm start
 ```
@@ -32,13 +59,15 @@ npm start
 curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 ```
 
+仅运行公开查询 API 可执行 `npm start -- app`。该模式只需要 `ORTH_APPLICATION_DATABASE_URL`。
+
 在微信开发者工具导入仓库根目录。启动页支持输入价格编码，也可用自定义编译条件打开 `pages/price/index?price_id=aj_8ccf6bc8657afcaaa14a3a3e901056fc`。详情显示计价单位和 `Sheet1 · 第 5 行 · G5`，并可复制官方公告链接和原表下载链接。仓库中的游客配置连接本地 API。接入真机或发布时，在 `miniprogram/app.js` 配置实际 HTTPS API 地址并设置小程序请求合法域名。
 
 ## 验证
 
 ```sh
-TEST_DATABASE_URL='postgresql://localhost/orthdatabase_test' npm test
+TEST_DATABASE_URL='postgresql://localhost/postgres' npm test
 npm run typecheck
 ```
 
-测试账号需要能在测试数据库创建临时模式。测试通过导入命令及后台 HTTP 操作准备数据，再通过公开 API 验证发布可见性。小程序模拟测试加载实际页面脚本与 WXML，通过同一个运行中的查询 API 取价并验证两个出处按钮。
+请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。小程序模拟测试加载实际页面脚本与 WXML，通过同一查询 API 取价并验证两个出处按钮。

@@ -1,8 +1,8 @@
 import { Pool } from "pg";
 
-export function connect() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) throw new Error("DATABASE_URL is required");
+export function connect(variable: string) {
+  const connectionString = process.env[variable];
+  if (!connectionString) throw new Error(`${variable} is required`);
   return new Pool({ connectionString });
 }
 

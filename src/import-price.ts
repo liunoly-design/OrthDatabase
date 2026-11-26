@@ -26,6 +26,12 @@ function extractCandidate(manifest: unknown, workbook: Buffer): Candidate {
 
   const digest = sha256(workbook);
   if (digest !== text("sha256")) throw new Error("原表与导入清单的 SHA-256 不一致");
+  const effectiveFrom = text("effective_from");
+  const date = new Date(effectiveFrom);
+  if (!/^(?!0000)\d{4}-\d{2}-\d{2}$/.test(effectiveFrom) ||
+      Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 10) !== effectiveFrom) {
+    throw new Error("effective_from 必须是 YYYY-MM-DD 格式的有效日期");
+  }
   const sheetName = text("sheet_name");
   const rowNumber = manifestField(manifest, "row_number");
   if (typeof rowNumber !== "number" || !Number.isInteger(rowNumber) ||
@@ -77,7 +83,7 @@ function extractCandidate(manifest: unknown, workbook: Buffer): Candidate {
     product_system: productSystem.trim(),
     applicant: applicant.trim(),
     region: text("region"),
-    effective_from: text("effective_from"),
+    effective_from: effectiveFrom,
     service_fee_basis: text("service_fee_basis"),
     source,
     original_rows: originalRows
@@ -95,7 +101,7 @@ const [manifest, workbook] = await Promise.all([
 ]);
 const candidate = extractCandidate(JSON.parse(manifest), workbook);
 await saveAttachment(attachmentRoot(), candidate.source.sha256, workbook);
-const pool = connect();
+const pool = connect("ORTH_GOVERNANCE_DATABASE_URL");
 try {
   await addCandidate(pool, candidate);
   console.log(JSON.stringify({ price_id: candidate.price_id }));
