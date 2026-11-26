@@ -4,12 +4,12 @@ import type { IncomingMessage } from "node:http";
 import { get } from "node:https";
 import { saveAttachment } from "./attachments.ts";
 import { attachmentRoot, connect } from "./database.ts";
-import { extractCandidate, parseImportManifest } from "./price-import.ts";
+import { awardTableBytes, extractCandidate, htmlResultsParserVersion, parseImportManifest } from "./price-import.ts";
 import { parserVersion, skillVersion } from "./governance-input.ts";
 import { addCandidate, ImportConflict, publishedPriceId } from "./price-store.ts";
 import { supplyParserVersion } from "./supply-evidence.ts";
 
-async function downloadWorkbook(url: string, signal: AbortSignal) {
+async function downloadResults(url: string, signal: AbortSignal) {
   const response = await new Promise<IncomingMessage>((resolve, reject) => {
     // The Hunan source rejects Node 24's default TLS group list.
     get(url, {
@@ -33,9 +33,10 @@ async function downloadWorkbook(url: string, signal: AbortSignal) {
   return Buffer.concat(chunks, size);
 }
 
-export async function collectPrice(manifestFile: string, workbookFile: string | undefined, databaseVariable: string, supplyFile?: string) {
+export async function collectPrice(manifestFile: string, resultsFile: string | undefined, databaseVariable: string, supplyFile?: string) {
   const manifest = parseImportManifest(JSON.parse(await readFile(manifestFile, "utf8")));
-  const source = manifest.source;
+  const { source } = manifest;
+  const resultsParser = source.attachment_format === "html" ? htmlResultsParserVersion : parserVersion;
   const taskId = randomUUID();
   const pool = connect(databaseVariable);
   const shutdown = new AbortController();
@@ -61,22 +62,23 @@ export async function collectPrice(manifestFile: string, workbookFile: string | 
           (task_id, notice_url, attachment_url, sha256, sheet_name, row_number, skill_version, parser_version, supply_manifest)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `, [taskId, source.notice_url, source.attachment_url, source.sha256, source.sheet_name, source.row_number, skillVersion,
-        manifest.supply ? parserVersion + "+" + supplyParserVersion : parserVersion, manifest.supply]);
+        manifest.supply ? resultsParser + "+" + supplyParserVersion : resultsParser, manifest.supply]);
 
       try {
-        const workbook = workbookFile
-          ? await readFile(workbookFile, { signal: shutdown.signal }).catch((cause: unknown) => {
+        const document = resultsFile
+          ? await readFile(resultsFile, { signal: shutdown.signal }).catch((cause: unknown) => {
             throw new Error("无法读取本地原表", { cause });
           })
-          : await downloadWorkbook(source.attachment_url, shutdown.signal);
+          : await downloadResults(source.attachment_url, shutdown.signal);
         shutdown.signal.throwIfAborted();
         const supplyWorkbook = supplyFile ? await readFile(supplyFile, { signal: shutdown.signal }).catch((cause: unknown) => {
           throw new Error("无法读取本地供应清单", { cause });
         }) : undefined;
-        const candidate = extractCandidate(manifest, workbook, supplyWorkbook);
+        const awardTable = awardTableBytes(source, document);
+        const candidate = extractCandidate(manifest, awardTable, supplyWorkbook);
         const archive = attachmentRoot();
         try {
-          await saveAttachment(archive, source.sha256, workbook);
+          await saveAttachment(archive, source.sha256, awardTable, source.attachment_format);
           if (manifest.supply && supplyWorkbook) await saveAttachment(archive, manifest.supply.sha256, supplyWorkbook, "xlsx");
         } catch (cause) {
           throw new Error("无法保存留档原表", { cause });

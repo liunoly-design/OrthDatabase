@@ -477,7 +477,7 @@ test("治理 Skill 重跑、追加证据、金额冲突及两种更正可沿公�
   assert.equal(failed.conflict.proposed_amount, "5901.00");
   assert.equal(failed.conflict.proposed_source.price_cell, "G5");
   assert.equal(failed.conflict.proposed_source.sha256, revised.sha256);
-  assert.equal(failed.skill_version, "orth-price-governance/1");
+  assert.equal(failed.skill_version, "orth-price-governance/2");
   assert.equal(failed.parser_version, "joint-results-xls/1");
   assert.equal((await (await get(priceId)).json()).amount, "5896.00");
 

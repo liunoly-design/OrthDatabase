@@ -1,12 +1,32 @@
 # 骨科集采查价
 
-从官方原始工作簿导入产品系统中选价，在 Web 后台对照原表、确认复核并发布，然后通过用户 Web 和微信小程序共用的公开 API 查价。两套系统共用 [价格发布契约 v1](contracts/price-v1.md) 和 PostgreSQL，使用独立的运行登录。
+从官方结果表导入产品系统中选价，在 Web 后台对照原表、确认复核并发布，然后通过用户 Web 和微信小程序共用的公开 API 查价。两套系统共用 [价格发布契约 v1](contracts/price-v1.md) 和 PostgreSQL，使用独立的运行登录。
 
 ## 真实样本
 
 原表是湖南省医疗保障局发布的湘医保函〔2024〕48 号附件 1。工作簿标题为《国家组织人工关节集中带量采购协议期满接续中选结果》。`Sheet1` 第 5 行为天津正天医疗器械有限公司，合金-聚乙烯类髋关节产品系统，价格格 `G5` 为 5896。按采购文件 GH-HD2024-1 正文第 24–25 页的产品系统报价规则记录为 **5896.00 元/套**。湖南执行通知明确自 2024-10-15 执行并包含伴随服务费。 [湖南执行通知](https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/t20240919_33458275.html) · [官方原表](https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/33458275/files/0ac80457057341528553dae98aee88b0.xls) · [采购文件](https://ylbzj.qdn.gov.cn/xwzx_500425/tzgg_5823021/202405/P020240501382474157441.pdf)
 
 `samples/hunan-joint-results.xls` 是原表字节快照，SHA-256 记录在同目录清单中。导入器从原表读取所选行的金额、产品系统和申报企业，从清单读取官方链接、地区与执行口径。工作簿按哈希留档，候选与发布状态存在 PostgreSQL。[发布快照](samples/hunan-joint-results.published.json) 提供双方可复用的期望响应值。
+
+### 两地政策与执行价
+
+`/procurement` 和 [公开查询 API](contracts/procurement-v1.md) 支持按品类、地区、采购轮次和日期核对政策节点及已发布的执行价。迁移 007 登记已核查的政策。价格用原表经 Worker 采集，复核发布后即可查询。
+
+- 湖南的湘医保函〔2024〕48 号第二节给出 **2024-10-15** 执行日，第一节第（三）项确定含伴随服务费。附件 1 的 `Sheet1!G5` 为 **5896.00 元/套**。 [湖南通知](https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/t20240919_33458275.html) · [湖南附件 1](https://ybj.hunan.gov.cn/ybj/first113541/firstF/f3113607/202409/33458275/files/0ac80457057341528553dae98aee88b0.xls)
+- 福建的闽医保〔2024〕73 号第二节明确 **2024-10-12** 执行，第五节明确按含伴随服务费的中选价挂网。福建附件 PDF 第 1 页序号 1 核对中选企业和产品系统类别。所引用的国家正式结果附件表中，序号 1 的中选价格列，即表头计为第一行的 `G2`，为 **5896.00 元/套**。两地单位依据均为 GH-HD2024-1 采购文件正文第 24–25 页的产品系统类别报价规则。 [福建通知](https://ybj.fj.gov.cn/zfxxgkzl/fdzdgknr/qtyzdgkzfxx/202409/t20240918_6523431.htm) · [福建附件](https://ybj.fujian.gov.cn/zfxxgkzl/fdzdgknr/qtyzdgkzfxx/202409/P020240918628974592265.pdf#page=1) · [国家正式结果表](https://hc.tjmpc.cn:10128/public/show14438.html) · [计价规则](https://www.nhsa.gov.cn/module/download/downfile.jsp?classid=0&filename=b7cee42cfccc4c8a8a947ee4891606a0.pdf#page=26)
+
+```sh
+npm run start:worker -- samples/hunan-joint-results.json samples/hunan-joint-results.xls
+npm run start:worker -- samples/fujian-joint-results.json
+```
+
+在运营 Web 分别复核、发布两条候选。离线导入福建样本时，用 `gzip -dc samples/national-joint-results.html.gz` 将国家结果表的原始字节写入临时 HTML，再把路径作为 Worker 的第二个参数。清单校验内嵌结果表的原始 UTF-8 字节哈希，页面会话字段不计入哈希。以下查询返回福建执行价及其地方政策；将日期改为 `2024-10-15` 可查询两地价格。
+
+```sh
+curl --get 'http://127.0.0.1:3000/api/v1/procurement' \
+  --data-urlencode 'category=人工关节' --data-urlencode 'round_id=GH-HD2024-1' \
+  --data-urlencode 'date=2024-10-12'
+```
 
 ### 治理 Skill 验收
 
@@ -30,7 +50,7 @@ curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc/
 | `orth_governance` | 读取官方信源、采集任务和候选，记录复核结果，读取正式区的候选发布状态和发布人。兼容手工导入入口沿用此登录，进入与 Worker 相同的采集流程。 |
 | `orth_worker` | 登记官方信源和采集任务，读写导入所需候选字段。 |
 | `orth_publisher` | 通过 `orth_catalog.publish_price` 和 `orth_catalog.publish_specification` 事务发布已复核候选和证据。 |
-| `orth_application` | 通过正式发布视图只读查价、价格证据和品规追溯数据，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
+| `orth_application` | 通过正式发布视图只读查价、价格证据、品规追溯及政策与执行价，读写 `orth_app.account`。该表为应用账号区提供独立授权入口。 |
 
 ## 本地复现
 
@@ -78,7 +98,7 @@ ORTH_GOVERNANCE_API_URL='http://127.0.0.1:3001/api/governance/v1' ORTH_APPLICATI
 
 `ORTH_APPLICATION_API_ORIGIN` 用于在已发布候选上显示公开查价链接，可省略。治理 API 提供 `/api/governance/v1/sources`、`/tasks`、`/candidates` 和候选的附件、复核、发布路由。
 
-采集 Worker 每次运行处理一份清单指定的 Excel 明细位置。省略工作簿路径时从清单的官方附件地址下载，离线回放时可在命令末尾加上 `samples/hunan-joint-results.xls`。两种模式都核对清单中的 SHA-256。清单读取并校验通过后登记独立任务，重复导入复用原价格编码。任务登记前的清单错误由 Worker 写入进程日志。Worker 异常退出后，运营端会标记中断的任务，重新执行会生成新任务。可从外部调度器定时执行同一入口。
+采集 Worker 每次运行处理一份清单指定的价格明细位置。省略本地原表路径时从清单的官方附件地址下载，离线回放时可在命令末尾加上 `samples/hunan-joint-results.xls`。两种模式都核对清单中的 SHA-256。清单读取并校验通过后登记独立任务，重复导入复用原价格编码。任务登记前的清单错误由 Worker 写入进程日志。Worker 异常退出后，运营端会标记中断的任务，重新执行会生成新任务。可从外部调度器定时执行同一入口。
 
 ```sh
 export ORTH_WORKER_DATABASE_URL='postgresql://orth_worker_login:PASSWORD@localhost/orthdatabase'
@@ -114,7 +134,7 @@ curl -i http://127.0.0.1:3000/api/v1/prices/aj_8ccf6bc8657afcaaa14a3a3e901056fc
 | --- | --- | --- |
 | `npm run build:governance` | `node dist/governance/start-governance.js` | `127.0.0.1:3001` |
 | `npm run build:operations` | `node dist/operations/start-operations.js` | `127.0.0.1:3002` |
-| `npm run build:worker` | `node dist/worker/start-worker.js <manifest.json> [workbook.xls] [supply.xlsx]` | 单次任务 |
+| `npm run build:worker` | `node dist/worker/start-worker.js <manifest.json> [results.xls 或 results.html] [supply.xlsx]` | 单次任务 |
 
 部署时分发对应的输出目录和根目录的 npm 清单及锁文件，执行 `npm ci --omit=dev` 安装运行依赖。HTTP 服务的监听地址和端口可用 `HOST` 和 `PORT` 配置。数据库迁移在部署前单独执行一次。
 
@@ -127,8 +147,11 @@ export TEST_DATABASE_URL='postgresql://localhost/postgres'
 npm run test:governance-api
 npm run test:worker
 npm run test:governance
+node --test test/procurement.test.ts
 npm test
 npm run typecheck
 ```
 
 请使用开发或测试 PostgreSQL 实例。测试账号需要建库和管理角色的权限。测试为每个用例创建临时数据库及独立登录，用运行角色直接检查数据库权限，通过导入命令、后台 HTTP 操作及公开查询 API 验证发布可见性。临时数据库与运行登录在用例结束后清理。测试独立启动应用进程，并在关闭治理服务后通过应用 API 复验最后一次发布。Web 测试提交实际页面表单、执行浏览器脚本并检查官方链接。小程序模拟测试加载实际页面脚本与 WXML，经同一 API 验证分享路径和两个出处按钮。
+
+政策与执行价专项使用真实原件回放。设置 `ORTH_TEST_LIVE_FUJIAN=1` 可由 Worker 从国家联采办公告直采内嵌正式结果表。
